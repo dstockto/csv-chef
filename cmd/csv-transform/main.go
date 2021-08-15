@@ -2,10 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/dstockto/csv-transform/csv"
 	"github.com/dstockto/csv-transform/recipe"
 )
-
-
 
 func main() {
 	fmt.Println("CSV Transform")
@@ -25,7 +24,7 @@ func main() {
 		},
 	}
 
-	csvInput, err := NewCsvInput("foo.csv")
+	csvInput, err := csv.NewCsvSource("foo.csv")
 	if err != nil {
 
 	}
