@@ -46,7 +46,8 @@ var readCmd = &cobra.Command{
 }
 
 func runRead(cmd *cobra.Command, args []string) {
-	csv, err := csv.NewCsvSource(args[0])
+	csv, close, err := csv.NewCsvSource(args[0])
+	defer close()
 
 	if err != nil {
 		log.Errorf("%+v", err)
