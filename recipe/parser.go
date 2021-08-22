@@ -52,47 +52,36 @@ func Parse(source io.Reader) (*Transformation, error) {
 
 		// grab first pipe piece - literal, column, variable, function, function w/ args
 		tok, lit = p.scanIgnoreWhitespace()
-		var operation Operation
 		switch tok {
 		case COLUMN_ID:
-			operation = getColumn(lit)
+			transformation.AddOperationByType(targetType, target, getColumn(lit))
 		case LITERAL:
-			operation = getLiteral(lit)
+			transformation.AddOperationByType(targetType, target, getLiteral(lit))
 		case VARIABLE:
-			operation = getVariable(lit)
+			transformation.AddOperationByType(targetType, target, getVariable(lit))
 		default:
 			return nil, fmt.Errorf("unexpected token [%d] %s\n", tok, lit)
-		}
-
-		// we have the operation, add it
-		switch targetType {
-		case "variable":
-			transformation.AddOperationToVariable(target, operation)
-		case "column":
-			transformation.AddOperationToColumn(target, operation)
 		}
 
 		// now we're in a loop because we've got at least one thing
 		// sanity kill
 		killCount := 0
+	LOOPSCAN:
 		for {
-			var operation Operation
 			killCount++
 			if killCount >= 10 {
 				break
 			}
 			tok, lit := p.scanIgnoreWhitespace()
-			fmt.Printf("%d %s\n", tok, lit)
+			fmt.Printf("Start of loop scan: [%d] %s\n", tok, lit)
 			switch tok {
 			case EOF:
+				break LOOPSCAN
+			case PIPE:
+				// TODO add pipe test
 				break
-			case LITERAL:
-				operation = Operation{
-					Name: "value",
-					Arguments: []Argument{
-						{Type: "literal", Value: lit},
-					},
-				}
+			case PLUS:
+				transformation.AddOperationByType(targetType, target, getJoinWithPlaceholder())
 			case COMMENT:
 				if targetType == "variable" {
 					recipe := transformation.Variables[target]
@@ -105,16 +94,22 @@ func Parse(source io.Reader) (*Transformation, error) {
 					recipe.Comment = lit
 					transformation.Columns[columnNum] = recipe
 				}
-				break
+				break LOOPSCAN
 			default:
 				break
 			}
-			if operation.Name != "" {
-				if targetType == "variable" {
-					transformation.AddOperationToVariable(target, operation)
-				} else if targetType == "column" {
-					transformation.AddOperationToColumn(target, operation)
-				}
+
+			// After connection scan stuff we can do (column, variable, literal, function)
+			// Comments or EOL are no bueno here like 1 <- 2 + # comment <- what??
+			tok, lit = p.scanIgnoreWhitespace()
+			switch tok {
+			case COLUMN_ID:
+				transformation.AddOperationByType(targetType, target, getColumn(lit))
+			case VARIABLE:
+				transformation.AddOperationByType(targetType, target, getVariable(lit))
+			case LITERAL:
+				transformation.AddOperationByType(targetType, target, getLiteral(lit))
+				// TODO implement function
 			}
 		}
 	}

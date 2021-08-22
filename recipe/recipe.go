@@ -192,6 +192,15 @@ func (t *Transformation) AddOperationToColumn(column string, operation Operation
 	t.Columns[columnNumber] = recipe
 }
 
+func (t *Transformation) AddOperationByType(targetType string, target string, operation Operation) {
+	switch targetType {
+	case "variable":
+		t.AddOperationToVariable(target, operation)
+	case "column":
+		t.AddOperationToColumn(target, operation)
+	}
+}
+
 type LineContext struct {
 	Variables map[string]string
 	Columns   map[int]string

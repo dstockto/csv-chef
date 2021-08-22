@@ -1,6 +1,7 @@
 package recipe
 
 import (
+	"fmt"
 	"io"
 	"reflect"
 	"strings"
@@ -191,31 +192,69 @@ func TestParse(t *testing.T) {
 			},
 			wantErr: false,
 		},
-		//{
-		//	name:    "join 2 columns with comment",
-		//	args:    args{
-		//		source: strings.NewReader("1 <- 2 + 3 #concat columns 2 and 3 into 1"),
-		//	},
-		//	want:    &Transformation{
-		//		Variables: map[string]Recipe{},
-		//		Columns: map[int]Recipe{
-		//			1: {
-		//				Output:  getOutputForColumn("1"),
-		//				Pipe: []Operation{
-		//					getColumn("2"),
-		//					getJoinWithPlaceholder(),
-		//					getColumn("3"),
-		//				},
-		//				Comment: "concat columns 2 and 3 into 1",
-		//			},
-		//		},
-		//		Placeholder: "",
-		//	},
-		//	wantErr: false,
-		//},
+		{
+			name: "join 2 columns with comment",
+			args: args{
+				source: strings.NewReader("1 <- 2 + 3 #concat columns 2 and 3 into 1"),
+			},
+			want: &Transformation{
+				Variables: map[string]Recipe{},
+				Columns: map[int]Recipe{
+					1: {
+						Output: getOutputForColumn("1"),
+						Pipe: []Operation{
+							getColumn("2"),
+							getJoinWithPlaceholder(),
+							getColumn("3"),
+						},
+						Comment: "concat columns 2 and 3 into 1",
+					},
+				},
+				Placeholder: "",
+			},
+			wantErr: false,
+		},
+		{
+			name: "join two literals",
+			args: args{source: strings.NewReader("$foo <- \"foo\" + \"bar\"")},
+			want: &Transformation{
+				Variables: map[string]Recipe{
+					"$foo": {
+						Output: getOutputForVariable("$foo"),
+						Pipe: []Operation{
+							getLiteral("foo"),
+							getJoinWithPlaceholder(),
+							getLiteral("bar"),
+						},
+					},
+				},
+				Columns: map[int]Recipe{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "prepend column with variable",
+			args: args{source: strings.NewReader("12 <- 12 + $foo # tack $foo on the back of column 12")},
+			want: &Transformation{
+				Variables: map[string]Recipe{},
+				Columns: map[int]Recipe{
+					12: {
+						Output: getOutputForColumn("12"),
+						Pipe: []Operation{
+							getColumn("12"),
+							getJoinWithPlaceholder(),
+							getVariable("$foo"),
+						},
+						Comment: "tack $foo on the back of column 12",
+					},
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			fmt.Println(tt.name)
 			got, err := Parse(tt.args.source)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Parse() error = %v, wantErr %v", err, tt.wantErr)
