@@ -91,18 +91,11 @@ func (t *Transformation) Dump(w io.Writer) {
 }
 
 func (t *Transformation) AddOutputToVariable(variable string) {
-	output := Output{
-		Type:  "variable",
-		Value: variable,
-	}
-	t.Variables[variable] = Recipe{Output: output}
+	t.Variables[variable] = Recipe{Output: getOutputForVariable(variable)}
 }
 
 func (t *Transformation) AddOutputToColumn(column string) {
-	output := Output{
-		Type:  "column",
-		Value: column,
-	}
+	output := getOutputForColumn(column)
 	columnNum, _ := strconv.Atoi(column)
 	t.Columns[columnNum] = Recipe{Output: output}
 }
