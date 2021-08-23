@@ -251,6 +251,170 @@ func TestParse(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name:    "Just a column is an error",
+			args:    args{source: strings.NewReader("5")},
+			wantErr: true,
+		},
+		{
+			name:    "Just a variable is an error",
+			args:    args{source: strings.NewReader("$foo")},
+			wantErr: true,
+		},
+		{
+			name:    "column must be followed by assign or error",
+			args:    args{source: strings.NewReader("4 = 3")},
+			wantErr: true,
+		},
+		{
+			name:    "variable must be followed by assign or error",
+			args:    args{source: strings.NewReader("$foo = $bar")},
+			wantErr: true,
+		},
+		{
+			name: "uppercase a column into a variable",
+			args: args{source: strings.NewReader("$big <- 6 -> uppercase")},
+			want: &Transformation{
+				Variables: map[string]Recipe{
+					"$big": {
+						Output: getOutputForVariable("$big"),
+						Pipe: []Operation{
+							getColumn("6"),
+							getFunction("uppercase", []Argument{
+								{
+									Type:  "placeholder",
+									Value: "?",
+								},
+							}),
+						},
+					},
+				},
+				Columns: map[int]Recipe{},
+			},
+			wantErr: false,
+		},
+		{
+			name:    "error when parsing function but no closing paren",
+			args:    args{source: strings.NewReader("4 <- error(")},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name:    "error when parsing function with comment in parens",
+			args:    args{source: strings.NewReader("5 <- nope(#this does not work")},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "function with no args to column with comment",
+			args: args{source: strings.NewReader("$date <- today #store today's date in a variable")},
+			want: &Transformation{
+				Variables: map[string]Recipe{
+					"$date": {
+						Output: getOutputForVariable("$date"),
+						Pipe: []Operation{
+							{
+								Name: "today",
+								Arguments: []Argument{
+									{
+										Type:  "placeholder",
+										Value: "?",
+									},
+								},
+							},
+						},
+						Comment: "store today's date in a variable",
+					},
+				},
+				Columns: map[int]Recipe{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "function with args feeds to variable",
+			args: args{source: strings.NewReader("$name <- fake(\"name\") # random name goes in")},
+			want: &Transformation{
+				Variables: map[string]Recipe{
+					"$name": {
+						Output: getOutputForVariable("$name"),
+						Pipe: []Operation{
+							getFunction("fake", []Argument{
+								{
+									Type:  "literal",
+									Value: "name",
+								},
+								{
+									Type:  "placeholder",
+									Value: "?",
+								},
+							}),
+						},
+						Comment: "random name goes in",
+					},
+				},
+				Columns: map[int]Recipe{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "function with explicit placeholder",
+			args: args{source: strings.NewReader("13 <- fake(?)")},
+			want: &Transformation{
+				Variables: map[string]Recipe{},
+				Columns: map[int]Recipe{
+					13: {
+						Output: getOutputForColumn("13"),
+						Pipe: []Operation{
+							{
+								Name: "fake",
+								Arguments: []Argument{
+									{
+										Type:  "placeholder",
+										Value: "?",
+									},
+								},
+							},
+						},
+						Comment: "",
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "function with multiple args",
+			args: args{source: strings.NewReader("$total <- add(2, $apples)")},
+			want: &Transformation{
+				Variables: map[string]Recipe{
+					"$total": {
+						Output: getOutputForVariable("$total"),
+						Pipe: []Operation{
+							{
+								Name: "add",
+								Arguments: []Argument{
+									{
+										Type:  "column",
+										Value: "2",
+									},
+									{
+										Type:  "variable",
+										Value: "$apples",
+									},
+									{
+										Type:  "placeholder",
+										Value: "?",
+									},
+								},
+							},
+						},
+						Comment: "",
+					},
+				},
+				Columns:     map[int]Recipe{},
+				Placeholder: "",
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

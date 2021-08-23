@@ -59,6 +59,13 @@ func Parse(source io.Reader) (*Transformation, error) {
 			transformation.AddOperationByType(targetType, target, getLiteral(lit))
 		case VARIABLE:
 			transformation.AddOperationByType(targetType, target, getVariable(lit))
+		case FUNCTION:
+			function := lit
+			operation, err := consumeFunctionArgs(p, function)
+			if err != nil {
+				return nil, err
+			}
+			transformation.AddOperationByType(targetType, target, operation)
 		default:
 			return nil, fmt.Errorf("unexpected token [%d] %s\n", tok, lit)
 		}
@@ -109,7 +116,13 @@ func Parse(source io.Reader) (*Transformation, error) {
 				transformation.AddOperationByType(targetType, target, getVariable(lit))
 			case LITERAL:
 				transformation.AddOperationByType(targetType, target, getLiteral(lit))
-				// TODO implement function
+			case FUNCTION:
+				function := lit
+				operation, err := consumeFunctionArgs(p, function)
+				if err != nil {
+					return nil, err
+				}
+				transformation.AddOperationByType(targetType, target, operation)
 			}
 		}
 	}
@@ -140,6 +153,13 @@ func getColumn(lit string) Operation {
 		},
 	}
 	return op
+}
+
+func getFunction(name string, args []Argument) Operation {
+	return Operation{
+		Name:      name,
+		Arguments: args,
+	}
 }
 
 func getVariable(lit string) Operation {
@@ -188,6 +208,83 @@ func consumeAssignment(p *Parser) error {
 	return nil
 }
 
+func consumeFunctionArgs(p *Parser, name string) (Operation, error) {
+	// look for paren
+	tok, _ := p.scan()
+
+	var operation Operation
+
+	operation.Name = name
+	// if not a paren, then we have the default placeholder arg
+	if tok != OPEN_PAREN {
+		// Whatever it was, we can let it get parsed elsewhere
+		p.s.unread()
+		operation.Arguments = []Argument{
+			{
+				Type:  "placeholder",
+				Value: "?",
+			},
+		}
+		return operation, nil
+	}
+
+	killer := 0
+	var gotPlaceholder bool // track if the placeholder was explicitly provided or not
+	var args []Argument
+ARGLOOP:
+	for {
+		killer++
+		if killer > 10 {
+			break
+		}
+
+		tok, lit := p.scanIgnoreWhitespace()
+		switch tok {
+		case EOF:
+			return operation, fmt.Errorf("expected function args for %s. found EOF", name)
+		case LITERAL:
+			args = append(args, Argument{
+				Type:  "literal",
+				Value: lit,
+			})
+		case PLACEHOLDER:
+			gotPlaceholder = true
+			args = append(args, Argument{
+				Type:  "placeholder",
+				Value: lit,
+			})
+		case COLUMN_ID:
+			args = append(args, Argument{
+				Type:  "column",
+				Value: lit,
+			})
+		case VARIABLE:
+			args = append(args, Argument{
+				Type:  "variable",
+				Value: lit,
+			})
+		case COMMA:
+			break
+		case CLOSE_PAREN:
+			break ARGLOOP
+		default:
+			return operation, fmt.Errorf("expected function args, got [%d] - %s", tok, lit)
+		}
+	}
+
+	if !gotPlaceholder || len(args) == 0 {
+		args = append(args, Argument{
+			Type:  "placeholder",
+			Value: "?",
+		})
+	}
+	//var args []Argument
+	// must now get args until we get a close paren
+	operation.Arguments = args
+
+	return operation, nil
+}
+
 // NewParser returns a new instance of Parser.
 func NewParser(r io.Reader) *Parser {
 	return &Parser{s: NewScanner(r)}
@@ -207,11 +304,12 @@ const (
 	PLACEHOLDER       //8 - ?
 	PLUS              //9 - +
 	LITERAL           //10 - "quoted"
-	IDENT             //11 - all letters
-	VARIABLE          //12 - starts w/ $
-	COMMA             //13 - ,
+	VARIABLE          //11 - starts w/ $
+	FUNCTION          //12 - letters
+	OPEN_PAREN        //13 - (
+	CLOSE_PAREN       //14 - )
+	COMMA             //15 - ,
 	//ARGUMENT			// unknown if needed
-	//FUNCTION          // need to figure out - IDENT may be this
 
 	//	column_id <- [0-9]+ | p + column_id
 	//column_assign <- "<-"
@@ -280,7 +378,7 @@ func (s *Scanner) Scan() (tok Token, lit string) {
 		return s.scanWhitespace()
 	} else if isLetter(ch) {
 		s.unread()
-		return s.scanIdent()
+		return s.scanFunction()
 	} else if ch == '<' {
 		s.unread()
 		return s.scanAssignment()
@@ -310,6 +408,12 @@ func (s *Scanner) Scan() (tok Token, lit string) {
 		return PLACEHOLDER, string(ch)
 	case '+':
 		return PLUS, string(ch)
+	case '(':
+		return OPEN_PAREN, string(ch)
+	case ')':
+		return CLOSE_PAREN, string(ch)
+	case ',':
+		return COMMA, string(ch)
 	}
 
 	return ILLEGAL, string(ch)
@@ -336,7 +440,7 @@ func (s *Scanner) scanWhitespace() (tok Token, lit string) {
 	return WS, buf.String()
 }
 
-func (s *Scanner) scanIdent() (Token, string) {
+func (s *Scanner) scanFunction() (Token, string) {
 	// Create a buffer and read the current character into it.
 	var buf bytes.Buffer
 	buf.WriteRune(s.read())
@@ -354,16 +458,8 @@ func (s *Scanner) scanIdent() (Token, string) {
 		}
 	}
 
-	// If the string matches a keyword then return that keyword.
-	switch strings.ToUpper(buf.String()) {
-	case "->":
-		return PIPE, buf.String()
-	case "<-":
-		return ASSIGNMENT, buf.String()
-	}
-
 	// Otherwise return as a regular identifier.
-	return IDENT, buf.String()
+	return FUNCTION, buf.String()
 }
 
 func (s *Scanner) scanAssignment() (Token, string) {
@@ -442,8 +538,11 @@ func (s *Scanner) scanVariable() (Token, string) {
 		if isWhiteSpace(ch) || ch == eof {
 			s.unread()
 			break
-		} else {
+		} else if isLetter(ch) {
 			_, _ = buf.WriteRune(ch)
+		} else {
+			s.unread()
+			break
 		}
 	}
 
