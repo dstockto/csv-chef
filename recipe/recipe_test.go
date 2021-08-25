@@ -14,9 +14,9 @@ func TestNewTransformation(t *testing.T) {
 		{
 			name: "buids a Transformation structure",
 			want: &Transformation{
-				Variables:   map[string]Recipe{},
-				Columns:     map[int]Recipe{},
-				Placeholder: "",
+				Variables: map[string]Recipe{},
+				Columns:   map[int]Recipe{},
+				Headers:   map[int]Recipe{},
 			},
 		},
 	}
@@ -209,6 +209,35 @@ func TestTransformation_AddOutputToVariable(t1 *testing.T) {
 	}
 }
 
+func TestTransformation_AddOutputToHeader(t1 *testing.T) {
+	tests := []struct {
+		name      string
+		header    string
+		headerNum int
+		want      Output
+	}{
+		{
+			name:      "add header output",
+			header:    "5",
+			headerNum: 5,
+			want: Output{
+				Type:  "header",
+				Value: "5",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t1.Run(tt.name, func(t1 *testing.T) {
+			t := NewTransformation()
+			t.AddOutputToHeader(tt.header)
+			got := t.Headers[tt.headerNum].Output
+			if got != tt.want {
+				t1.Errorf("Dump() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestTransformation_AddOutputToColumn(t1 *testing.T) {
 	tests := []struct {
 		name      string
@@ -258,8 +287,7 @@ func TestTransformation_AddOperationToVariable(t1 *testing.T) {
 						Comment: "",
 					},
 				},
-				Columns:     nil,
-				Placeholder: "",
+				Columns: nil,
 			},
 			operation: Operation{
 				Name: "value",
@@ -284,9 +312,8 @@ func TestTransformation_AddOperationToVariable(t1 *testing.T) {
 			name:     "add operation to variable without output",
 			variable: "ploopy",
 			initial: Transformation{
-				Variables:   map[string]Recipe{},
-				Columns:     map[int]Recipe{},
-				Placeholder: "",
+				Variables: map[string]Recipe{},
+				Columns:   map[int]Recipe{},
 			},
 			operation: Operation{
 				Name: "value",
@@ -353,7 +380,6 @@ func TestTransformation_AddOperationToColumn(t1 *testing.T) {
 						Comment: "",
 					},
 				},
-				Placeholder: "",
 			},
 			operation: Operation{
 				Name: "value",
@@ -379,9 +405,8 @@ func TestTransformation_AddOperationToColumn(t1 *testing.T) {
 			column:       "14",
 			columnNumber: 14,
 			initial: Transformation{
-				Variables:   map[string]Recipe{},
-				Columns:     map[int]Recipe{},
-				Placeholder: "",
+				Variables: map[string]Recipe{},
+				Columns:   map[int]Recipe{},
 			},
 			operation: Operation{
 				Name: "value",
@@ -407,9 +432,8 @@ func TestTransformation_AddOperationToColumn(t1 *testing.T) {
 			column:       "14",
 			columnNumber: 14,
 			initial: Transformation{
-				Variables:   map[string]Recipe{},
-				Columns:     map[int]Recipe{},
-				Placeholder: "",
+				Variables: map[string]Recipe{},
+				Columns:   map[int]Recipe{},
 			},
 			operation: Operation{
 				Name: "value",
@@ -456,7 +480,6 @@ func TestTransformation_AddOperationToColumn(t1 *testing.T) {
 						Comment: "",
 					},
 				},
-				Placeholder: "",
 			},
 			operation: Operation{
 				Name: "value",

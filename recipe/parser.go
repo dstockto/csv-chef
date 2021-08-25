@@ -37,8 +37,8 @@ func Parse(source io.Reader) (*Transformation, error) {
 			continue
 		}
 
-		if tok != COLUMN_ID && tok != VARIABLE {
-			return transformation, fmt.Errorf("expected column or variable on line %d, but found %s", lineNo, lit)
+		if tok != COLUMN_ID && tok != VARIABLE && tok != HEADER {
+			return transformation, fmt.Errorf("expected column, header or variable on line %d, but found %s", lineNo, lit)
 		}
 
 		// Found column or variable to assign result to
@@ -50,6 +50,9 @@ func Parse(source io.Reader) (*Transformation, error) {
 		} else if tok == VARIABLE {
 			transformation.AddOutputToVariable(lit)
 			targetType = "variable"
+		} else if tok == HEADER {
+			transformation.AddOutputToHeader(lit)
+			targetType = "header"
 		}
 
 		// After column or variable, we need the assignment <- operator
@@ -99,6 +102,12 @@ func Parse(source io.Reader) (*Transformation, error) {
 					recipe := transformation.Columns[columnNum]
 					recipe.Comment = lit
 					transformation.Columns[columnNum] = recipe
+				}
+				if targetType == "header" {
+					headerNum, _ := strconv.Atoi(target)
+					recipe := transformation.Headers[headerNum]
+					recipe.Comment = lit
+					transformation.Headers[headerNum] = recipe
 				}
 				break LOOPSCAN
 			default:
@@ -184,6 +193,13 @@ func getOutputForVariable(v string) Output {
 	return Output{
 		Type:  "variable",
 		Value: v,
+	}
+}
+
+func getOutputForHeader(h string) Output {
+	return Output{
+		Type:  "header",
+		Value: h,
 	}
 }
 
@@ -313,6 +329,7 @@ const (
 	OPEN_PAREN        //13 - (
 	CLOSE_PAREN       //14 - )
 	COMMA             //15 - ,
+	HEADER            //16 - !<digits>
 	//ARGUMENT			// unknown if needed
 
 	//	column_id <- [0-9]+ | p + column_id
@@ -398,6 +415,9 @@ func (s *Scanner) Scan() (tok Token, lit string) {
 	} else if ch == '"' {
 		s.unread()
 		return s.scanLiteral()
+	} else if ch == '!' {
+		_, lit := s.scanColumn()
+		return HEADER, lit
 	} else if ch == '#' {
 		return s.scanComment()
 	}

@@ -52,9 +52,9 @@ type Recipe struct {
 }
 
 type Transformation struct {
-	Variables   map[string]Recipe
-	Columns     map[int]Recipe
-	Placeholder string
+	Variables map[string]Recipe
+	Columns   map[int]Recipe
+	Headers   map[int]Recipe
 }
 
 func (t *Transformation) Dump(w io.Writer) {
@@ -98,6 +98,12 @@ func (t *Transformation) AddOutputToColumn(column string) {
 	output := getOutputForColumn(column)
 	columnNum, _ := strconv.Atoi(column)
 	t.Columns[columnNum] = Recipe{Output: output}
+}
+
+func (t *Transformation) AddOutputToHeader(header string) {
+	output := getOutputForHeader(header)
+	headerNum, _ := strconv.Atoi(header)
+	t.Headers[headerNum] = Recipe{Output: output}
 }
 
 func (t *Transformation) Execute(reader *csv.Reader, writer **csv.Writer, l *LineContext) {
@@ -192,12 +198,30 @@ func (t *Transformation) AddOperationToColumn(column string, operation Operation
 	t.Columns[columnNumber] = recipe
 }
 
+func (t *Transformation) AddOperationToHeader(header string, operation Operation) {
+	headerNumber, _ := strconv.Atoi(header)
+	recipe, ok := t.Headers[headerNumber]
+	if !ok {
+		t.AddOutputToHeader(header)
+		recipe = t.Headers[headerNumber]
+	}
+	pipe := recipe.Pipe
+	if pipe == nil {
+		pipe = []Operation{}
+	}
+	pipe = append(pipe, operation)
+	recipe.Pipe = pipe
+	t.Headers[headerNumber] = recipe
+}
+
 func (t *Transformation) AddOperationByType(targetType string, target string, operation Operation) {
 	switch targetType {
 	case "variable":
 		t.AddOperationToVariable(target, operation)
 	case "column":
 		t.AddOperationToColumn(target, operation)
+	case "header":
+		t.AddOperationToHeader(target, operation)
 	}
 }
 
@@ -210,5 +234,6 @@ func NewTransformation() *Transformation {
 	return &Transformation{
 		Variables: make(map[string]Recipe),
 		Columns:   make(map[int]Recipe),
+		Headers:   make(map[int]Recipe),
 	}
 }
