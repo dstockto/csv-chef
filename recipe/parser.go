@@ -28,14 +28,12 @@ func Parse(source io.Reader) (*Transformation, error) {
 	lines := strings.Split(s, "\n")
 
 	for lineNo, l := range lines {
-		fmt.Printf("Parsing line #%d\n", lineNo)
 		p := NewParser(strings.NewReader(l))
 
 		// Full Line Comment
 		tok, lit := p.scanIgnoreWhitespace()
 		if tok == COMMENT {
-			comment := p.scanComment()
-			fmt.Printf("Ignore comment: # %s\n", comment)
+			p.scanComment()
 			continue
 		}
 
@@ -79,17 +77,9 @@ func Parse(source io.Reader) (*Transformation, error) {
 			return nil, fmt.Errorf("unexpected token [%d] %s\n", tok, lit)
 		}
 
-		// now we're in a loop because we've got at least one thing
-		// sanity kill
-		killCount := 0
 	LOOPSCAN:
 		for {
-			killCount++
-			if killCount >= 10 {
-				break
-			}
 			tok, lit := p.scanIgnoreWhitespace()
-			fmt.Printf("Start of loop scan: [%d] %s\n", tok, lit)
 			switch tok {
 			case EOF:
 				break LOOPSCAN
@@ -235,16 +225,10 @@ func consumeFunctionArgs(p *Parser, name string) (Operation, error) {
 		return operation, nil
 	}
 
-	killer := 0
 	var gotPlaceholder bool // track if the placeholder was explicitly provided or not
 	var args []Argument
 ARGLOOP:
 	for {
-		killer++
-		if killer > 10 {
-			break
-		}
-
 		tok, lit := p.scanIgnoreWhitespace()
 		switch tok {
 		case EOF:
