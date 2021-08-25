@@ -415,6 +415,61 @@ func TestParse(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "function with multiple args piped to more complex function",
+			args: args{source: strings.NewReader("$total <- add(2, $apples) -> do_something(?, 2, $foo, \"cow\") #what even is this?")},
+			want: &Transformation{
+				Variables: map[string]Recipe{
+					"$total": {
+						Output: getOutputForVariable("$total"),
+						Pipe: []Operation{
+							{
+								Name: "add",
+								Arguments: []Argument{
+									{
+										Type:  "column",
+										Value: "2",
+									},
+									{
+										Type:  "variable",
+										Value: "$apples",
+									},
+									{
+										Type:  "placeholder",
+										Value: "?",
+									},
+								},
+							},
+							{
+								Name: "do_something",
+								Arguments: []Argument{
+									{
+										Type:  "placeholder",
+										Value: "?",
+									},
+									{
+										Type:  "column",
+										Value: "2",
+									},
+									{
+										Type:  "variable",
+										Value: "$foo",
+									},
+									{
+										Type:  "literal",
+										Value: "cow",
+									},
+								},
+							},
+						},
+						Comment: "what even is this?",
+					},
+				},
+				Columns:     map[int]Recipe{},
+				Placeholder: "",
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
