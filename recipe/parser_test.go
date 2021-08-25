@@ -314,13 +314,8 @@ func TestParse(t *testing.T) {
 						Output: getOutputForVariable("$date"),
 						Pipe: []Operation{
 							{
-								Name: "today",
-								Arguments: []Argument{
-									{
-										Type:  "placeholder",
-										Value: "?",
-									},
-								},
+								Name:      "today",
+								Arguments: []Argument{},
 							},
 						},
 						Comment: "store today's date in a variable",
@@ -416,8 +411,8 @@ func TestParse(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "function with multiple args piped to more complex function",
-			args: args{source: strings.NewReader("$total <- add(2, $apples) -> do_something(?, 2, $foo, \"cow\") #what even is this?")},
+			name: "function with multiple args piped to another",
+			args: args{source: strings.NewReader("$total <- add(2, $apples) -> normalize_date(\"Y-m-d\") #what even is this?")},
 			want: &Transformation{
 				Variables: map[string]Recipe{
 					"$total": {
@@ -441,23 +436,15 @@ func TestParse(t *testing.T) {
 								},
 							},
 							{
-								Name: "do_something",
+								Name: "normalize_date",
 								Arguments: []Argument{
+									{
+										Type:  "literal",
+										Value: "Y-m-d",
+									},
 									{
 										Type:  "placeholder",
 										Value: "?",
-									},
-									{
-										Type:  "column",
-										Value: "2",
-									},
-									{
-										Type:  "variable",
-										Value: "$foo",
-									},
-									{
-										Type:  "literal",
-										Value: "cow",
 									},
 								},
 							},
@@ -467,6 +454,38 @@ func TestParse(t *testing.T) {
 				},
 				Columns:     map[int]Recipe{},
 				Placeholder: "",
+			},
+			wantErr: false,
+		},
+		{
+			name: "literal with embedded quotes into variable",
+			args: args{source: strings.NewReader("$foo <- \"this \\\" quote \"")},
+			want: &Transformation{
+				Variables: map[string]Recipe{
+					"$foo": {
+						Output: getOutputForVariable("$foo"),
+						Pipe: []Operation{
+							getLiteral("this \" quote "),
+						},
+					},
+				},
+				Columns: map[int]Recipe{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "literal with embedded quote and backslash into column",
+			args: args{source: strings.NewReader("15 <- \"quote: \\\" bs: \\\\ !\"")},
+			want: &Transformation{
+				Variables: map[string]Recipe{},
+				Columns: map[int]Recipe{
+					15: {
+						Output: getOutputForColumn("15"),
+						Pipe: []Operation{
+							getLiteral("quote: \" bs: \\ !"),
+						},
+					},
+				},
 			},
 			wantErr: false,
 		},

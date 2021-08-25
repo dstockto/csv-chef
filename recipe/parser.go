@@ -9,6 +9,15 @@ import (
 	"strings"
 )
 
+var allFuncs = map[string][]int{
+	"uppercase":      {1},
+	"join":           {1},
+	"today":          {0},
+	"fake":           {1},
+	"add":            {2},
+	"normalize_date": {1, 1},
+}
+
 func Parse(source io.Reader) (*Transformation, error) {
 	transformation := NewTransformation()
 
@@ -134,10 +143,7 @@ func getLiteral(lit string) Operation {
 	return Operation{
 		Name: "value",
 		Arguments: []Argument{
-			{
-				Type:  "literal",
-				Value: lit,
-			},
+			literalArg(lit),
 		},
 	}
 }
@@ -146,10 +152,7 @@ func getColumn(lit string) Operation {
 	op := Operation{
 		Name: "value",
 		Arguments: []Argument{
-			{
-				Type:  "column",
-				Value: lit,
-			},
+			columnArg(lit),
 		},
 	}
 	return op
@@ -166,10 +169,7 @@ func getVariable(lit string) Operation {
 	return Operation{
 		Name: "value",
 		Arguments: []Argument{
-			{
-				Type:  "variable",
-				Value: lit,
-			},
+			variableArg(lit),
 		},
 	}
 }
@@ -178,10 +178,7 @@ func getJoinWithPlaceholder() Operation {
 	return Operation{
 		Name: "join",
 		Arguments: []Argument{
-			{
-				Type:  "placeholder",
-				Value: "?",
-			},
+			placeholderArg(),
 		},
 	}
 }
@@ -209,6 +206,17 @@ func consumeAssignment(p *Parser) error {
 }
 
 func consumeFunctionArgs(p *Parser, name string) (Operation, error) {
+	// check if the function even exists
+	funcArgs, ok := allFuncs[name]
+	if !ok {
+		return Operation{}, fmt.Errorf("unrecognized function %s", name)
+	}
+	var totalArgs int
+
+	for _, count := range funcArgs {
+		totalArgs += count
+	}
+
 	// look for paren
 	tok, _ := p.scan()
 
@@ -219,12 +227,11 @@ func consumeFunctionArgs(p *Parser, name string) (Operation, error) {
 	if tok != OPEN_PAREN {
 		// Whatever it was, we can let it get parsed elsewhere
 		p.s.unread()
-		operation.Arguments = []Argument{
-			{
-				Type:  "placeholder",
-				Value: "?",
-			},
+		operation.Arguments = []Argument{}
+		for i := 0; i < totalArgs; i++ {
+			operation.Arguments = append(operation.Arguments, placeholderArg())
 		}
+
 		return operation, nil
 	}
 
@@ -243,26 +250,14 @@ ARGLOOP:
 		case EOF:
 			return operation, fmt.Errorf("expected function args for %s. found EOF", name)
 		case LITERAL:
-			args = append(args, Argument{
-				Type:  "literal",
-				Value: lit,
-			})
+			args = append(args, literalArg(lit))
 		case PLACEHOLDER:
 			gotPlaceholder = true
-			args = append(args, Argument{
-				Type:  "placeholder",
-				Value: lit,
-			})
+			args = append(args, placeholderArg())
 		case COLUMN_ID:
-			args = append(args, Argument{
-				Type:  "column",
-				Value: lit,
-			})
+			args = append(args, columnArg(lit))
 		case VARIABLE:
-			args = append(args, Argument{
-				Type:  "variable",
-				Value: lit,
-			})
+			args = append(args, variableArg(lit))
 		case COMMA:
 			break
 		case CLOSE_PAREN:
@@ -273,16 +268,41 @@ ARGLOOP:
 	}
 
 	if !gotPlaceholder || len(args) == 0 {
-		args = append(args, Argument{
-			Type:  "placeholder",
-			Value: "?",
-		})
+		args = append(args, placeholderArg())
 	}
 	//var args []Argument
 	// must now get args until we get a close paren
 	operation.Arguments = args
 
 	return operation, nil
+}
+
+func variableArg(lit string) Argument {
+	return Argument{
+		Type:  "variable",
+		Value: lit,
+	}
+}
+
+func columnArg(lit string) Argument {
+	return Argument{
+		Type:  "column",
+		Value: lit,
+	}
+}
+
+func literalArg(lit string) Argument {
+	return Argument{
+		Type:  "literal",
+		Value: lit,
+	}
+}
+
+func placeholderArg() Argument {
+	return Argument{
+		Type:  "placeholder",
+		Value: "?",
+	}
 }
 
 // NewParser returns a new instance of Parser.
@@ -513,19 +533,21 @@ func (s *Scanner) scanColumn() (Token, string) {
 func (s *Scanner) scanLiteral() (Token, string) {
 	// Create a buffer and read the current character into it.
 	var buf bytes.Buffer
-	buf.WriteRune(s.read())
+
+	s.read() // eat the leading quote
 
 	for {
 		ch := s.read()
-		if ch != '"' {
+		if ch == '\\' {
+			_, _ = buf.WriteRune(s.read())
+		} else if ch != '"' {
 			_, _ = buf.WriteRune(ch)
 		} else {
-			_, _ = buf.WriteRune(ch)
 			break
 		}
 	}
 
-	return LITERAL, strings.Trim(buf.String(), "\"")
+	return LITERAL, buf.String()
 }
 
 func (s *Scanner) scanVariable() (Token, string) {
