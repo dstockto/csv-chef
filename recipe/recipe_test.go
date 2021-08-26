@@ -1,8 +1,10 @@
 package recipe
 
 import (
-	"fmt"
+	"bytes"
+	"encoding/csv"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -122,65 +124,6 @@ func TestOutput_GetValue(t *testing.T) {
 		})
 	}
 }
-
-//
-//func TestTransformation_Dump(t1 *testing.T) {
-//	type fields struct {
-//		Variables   map[string]Recipe
-//		Columns     map[int]Recipe
-//		Placeholder string
-//	}
-//	tests := []struct {
-//		name   string
-//		fields fields
-//		wantW  string
-//	}{
-//		// TODO: Add test cases.
-//	}
-//	for _, tt := range tests {
-//		t1.Run(tt.name, func(t1 *testing.T) {
-//			t := &Transformation{
-//				Variables:   tt.fields.Variables,
-//				Columns:     tt.fields.Columns,
-//				Placeholder: tt.fields.Placeholder,
-//			}
-//			w := &bytes.Buffer{}
-//			t.Dump(w)
-//			if gotW := w.String(); gotW != tt.wantW {
-//				t1.Errorf("Dump() = %v, want %v", gotW, tt.wantW)
-//			}
-//		})
-//	}
-//}
-//
-//func TestTransformation_Execute(t1 *testing.T) {
-//	type fields struct {
-//		Variables   map[string]Recipe
-//		Columns     map[int]Recipe
-//		Placeholder string
-//	}
-//	type args struct {
-//		reader *csv.Reader
-//		writer **csv.Writer
-//		l      *LineContext
-//	}
-//	tests := []struct {
-//		name   string
-//		fields fields
-//		args   args
-//	}{
-//		// TODO: Add test cases.
-//	}
-//	for _, tt := range tests {
-//		t1.Run(tt.name, func(t1 *testing.T) {
-//			t := &Transformation{
-//				Variables:   tt.fields.Variables,
-//				Columns:     tt.fields.Columns,
-//				Placeholder: tt.fields.Placeholder,
-//			}
-//		})
-//	}
-//}
 
 func TestTransformation_AddOutputToVariable(t1 *testing.T) {
 	tests := []struct {
@@ -507,7 +450,6 @@ func TestTransformation_AddOperationToColumn(t1 *testing.T) {
 			initialLength := len(tt.initial.Columns[tt.columnNumber].Pipe)
 			t.AddOperationToColumn(tt.column, tt.operation)
 
-			fmt.Println("initial", initialLength)
 			if len(t.Columns[tt.columnNumber].Pipe) != (initialLength + 1) {
 				t1.Errorf("expected pipe have %d operations, got %d", initialLength, len(t.Columns[tt.columnNumber].Pipe))
 				t1.Fail()
@@ -516,6 +458,129 @@ func TestTransformation_AddOperationToColumn(t1 *testing.T) {
 			got := t.Columns[tt.columnNumber].Pipe[initialLength]
 
 			if !reflect.DeepEqual(got, tt.want) {
+				t1.Errorf("Dump() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestTransformation_Execute(t1 *testing.T) {
+	type fields struct {
+		Variables map[string]Recipe
+		Columns   map[int]Recipe
+		Headers   map[int]Recipe
+	}
+	type args struct {
+		input         string
+		processHeader bool
+	}
+	tests := []struct {
+		name        string
+		fields      fields
+		args        args
+		want        string
+		wantErr     bool
+		wantErrText string
+	}{
+		{
+			name: "empty recipe is an error",
+			fields: fields{
+				Variables: map[string]Recipe{},
+				Columns:   map[int]Recipe{},
+				Headers:   map[int]Recipe{},
+			},
+			args: args{
+				input:         "a,b,c\n",
+				processHeader: false,
+			},
+			want:        "",
+			wantErr:     true,
+			wantErrText: "no column recipes provided",
+		},
+		{
+			name: "missing column rules is an error",
+			fields: fields{
+				Variables: map[string]Recipe{},
+				Columns: map[int]Recipe{
+					2: {
+						Output: getOutputForColumn("2"),
+						Pipe: []Operation{
+							getColumn("2"),
+						},
+					},
+				},
+				Headers: map[int]Recipe{},
+			},
+			args: args{
+				input:         "a,b,c\n",
+				processHeader: false,
+			},
+			want:        "",
+			wantErr:     true,
+			wantErrText: "missing column definition for column #1",
+		},
+		{
+			name: "reading column that does not exist is an error",
+			fields: fields{
+				Variables: map[string]Recipe{},
+				Columns: map[int]Recipe{
+					1: {
+						Output: getOutputForColumn("1"),
+						Pipe: []Operation{
+							getColumn("2"),
+						},
+					},
+				},
+				Headers: map[int]Recipe{},
+			},
+			args: args{
+				input:         "a\nb\n",
+				processHeader: false,
+			},
+			want:    "",
+			wantErr: true,
+		},
+		//{
+		//	name: "pass-through without headers (1 column)",
+		//	fields: fields{
+		//		Variables: map[string]Recipe{},
+		//		Columns:   map[int]Recipe{
+		//			1: {
+		//				Output:  getOutputForColumn("1"),
+		//				Pipe: []Operation{
+		//					getColumn("1"),
+		//				},
+		//			},
+		//		},
+		//		Headers:   map[int]Recipe{},
+		//	},
+		//	args: args{
+		//		input: "fruit\napple\n",
+		//		processHeader: false,
+		//	},
+		//	want: "fruit\napple\n",
+		//},
+	}
+	for _, tt := range tests {
+		t1.Run(tt.name, func(t1 *testing.T) {
+			t := &Transformation{
+				Variables: tt.fields.Variables,
+				Columns:   tt.fields.Columns,
+				Headers:   tt.fields.Headers,
+			}
+			var b bytes.Buffer
+			writer := csv.NewWriter(&b)
+			err := t.Execute(csv.NewReader(strings.NewReader(tt.args.input)), writer, tt.args.processHeader)
+			if (err != nil) != tt.wantErr {
+				t1.Errorf("error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if tt.wantErr && err.Error() != tt.wantErrText {
+				t1.Errorf("got error text = %v, want error text = %v", err.Error(), tt.wantErrText)
+			}
+
+			got := b.String()
+			if got != tt.want {
 				t1.Errorf("Dump() = %v, want %v", got, tt.want)
 			}
 		})

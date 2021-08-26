@@ -23,7 +23,6 @@ package cmd
 
 import (
 	"encoding/csv"
-	"fmt"
 	"github.com/dstockto/csv-transform/recipe"
 	"github.com/spf13/cobra"
 	"os"
@@ -98,20 +97,13 @@ to quickly create a Cobra application.`,
 		}
 
 		transform.Dump(os.Stdout)
-		var buffer []byte
 
 		reader := csv.NewReader(strings.NewReader("alpha,banana,carrot,delta,3billion\ndomain,elephant,fart,salami,donkey\n"))
 		//writer := csv.NewWriter(bytes.NewBuffer(buffer))
 		writer := csv.NewWriter(os.Stdout)
-		context := recipe.LineContext{
-			Variables: make(map[string]string),
-			Columns:   make(map[int]string),
-		}
 
-		transform.Execute(reader, &writer, &context)
+		transform.Execute(reader, writer, true)
 		writer.Flush()
-		fmt.Println(buffer)
-		fmt.Printf("%+v\n", context)
 	},
 }
 

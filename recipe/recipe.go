@@ -5,9 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"strconv"
-	"strings"
 )
 
 type Output struct {
@@ -121,65 +119,63 @@ func (t *Transformation) AddOutputToHeader(header string) {
 	t.Headers[headerNum] = Recipe{Output: output}
 }
 
-func (t *Transformation) Execute(reader *csv.Reader, writer **csv.Writer, l *LineContext) {
-	for {
-		record, err := reader.Read()
-		if err == io.EOF {
-			return
-		}
-		if err != nil {
-			log.Fatalln(err)
-		}
-		l.Variables = make(map[string]string)
-		l.Columns = make(map[int]string)
-		for i, r := range record {
-			l.Columns[i+1] = r
-		}
+func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, processHeader bool) error {
+	defer writer.Flush()
 
-		for v := range t.Variables {
-			name := t.Variables[v].Output.Value
-			pipe := t.Variables[v].Pipe
-			var placeholder string
-			mode := "replace"
+	numColumns := len(t.Columns)
 
-			for _, op := range pipe {
-				opName := op.Name
-				if opName == "value" {
-					arg := op.Arguments[0]
-					if arg.Type == "literal" {
-						if mode == "replace" {
-							placeholder = arg.Value
-						} else {
-							placeholder += arg.Value
-							mode = "replace"
-						}
-					} else if arg.Type == "column" {
-						column, _ := strconv.Atoi(arg.Value)
-						value := l.Columns[column]
-						//fmt.Println("Got col value", value)
-						if mode == "replace" {
-							placeholder = value
-						} else {
-							placeholder += value
-							mode = "replace"
-						}
-					} else {
-						fmt.Println("implement", arg.Type, "for value")
-					}
-				}
-				if opName == "join" {
-					mode = "join"
-				}
-				if opName == "lowercase" {
-					placeholder = strings.ToLower(placeholder)
-				}
-				fmt.Println(opName, placeholder)
-			}
-			l.Variables[name] = placeholder
-			(*writer).Write([]string{"Variable:", name, "=", placeholder})
-			fmt.Println("Got name: ", name, placeholder)
-		}
+	if err := t.ValidateRecipe(); err != nil {
+		return err
 	}
+	var linesRead int
+
+	// TODO process header
+
+	// TODO process columns
+	for {
+		var context = LineContext{
+			Variables: make(map[string]string),
+			Columns:   make(map[int]string),
+		}
+		var output = make(map[int]string)
+		// load line into context
+		row, err := reader.Read()
+		if err != nil {
+			return fmt.Errorf("processing line %d error: %v", linesRead, err)
+		}
+		linesRead++
+		for col, cell := range row {
+			context.Columns[col+1] = cell
+		}
+
+		// junk
+		output[1] = "column 1"
+		output[2] = "col 2"
+
+		// TODO process variables
+		// TODO process columns
+		// TODO write output
+		var outputStrings []string
+		for c := 1; c <= numColumns; c++ {
+			value, ok := output[c]
+			if !ok {
+				return fmt.Errorf("internal logic error: expected to find output for column %d, but nothing was found", c)
+			}
+			outputStrings = append(outputStrings, value)
+		}
+
+		err = writer.Write(outputStrings)
+		if err != nil {
+			return fmt.Errorf("output error: %v", err)
+		}
+
+		//row, err := reader.Read()
+		break
+	}
+
+	writer.Write([]string{"fruit", "veggie", "mineral"})
+	writer.Write([]string{"apple", "carrot", "rock"})
+	return nil
 }
 
 func (t *Transformation) AddOperationToVariable(variable string, operation Operation) {
@@ -238,6 +234,24 @@ func (t *Transformation) AddOperationByType(targetType string, target string, op
 	case "header":
 		t.AddOperationToHeader(target, operation)
 	}
+}
+
+func (t *Transformation) ValidateRecipe() error {
+	numColumns := len(t.Columns)
+
+	// recipe with no columns is pointless/invalid
+	if numColumns == 0 {
+		return errors.New("no column recipes provided")
+	}
+
+	// validate all columns are specified
+	for c := 1; c <= numColumns; c++ {
+		if _, ok := t.Columns[c]; !ok {
+			return fmt.Errorf("missing column definition for column #%d", c)
+		}
+	}
+
+	return nil
 }
 
 type LineContext struct {

@@ -90,7 +90,6 @@ func Parse(source io.Reader) (*Transformation, error) {
 			case EOF:
 				break LOOPSCAN
 			case PIPE:
-				// TODO add pipe test
 				break
 			case PLUS:
 				transformation.AddOperationByType(targetType, target, getJoinWithPlaceholder())
