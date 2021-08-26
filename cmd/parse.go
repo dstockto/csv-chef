@@ -56,7 +56,6 @@ func runParse(cmd *cobra.Command, args []string) {
 	}
 
 	transformation.Dump(os.Stdout)
-
 }
 
 func init() {

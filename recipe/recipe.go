@@ -58,6 +58,21 @@ type Transformation struct {
 }
 
 func (t *Transformation) Dump(w io.Writer) {
+	_, _ = fmt.Fprintln(w, "Headers: \n=====")
+	for _, h := range t.Headers {
+		_, _ = fmt.Fprintf(w, "Header: %s\n", h.Output.Value)
+		_, _ = fmt.Fprintf(w, "pipe: ")
+		for _, p := range h.Pipe {
+			_, _ = fmt.Fprintf(w, p.Name+"(")
+			for _, a := range p.Arguments {
+				_, _ = fmt.Fprintf(w, "%s: %s, ", a.Type, a.Value)
+			}
+			_, _ = fmt.Fprintf(w, ") -> ")
+		}
+		_, _ = fmt.Fprintln(w)
+		_, _ = fmt.Fprintf(w, "Comment: # %s\n---\n", h.Comment)
+	}
+
 	_, _ = fmt.Fprintln(w, "Variables: \n======")
 	for _, v := range t.Variables {
 		_, _ = fmt.Fprintf(w, "Var: %s\n", v.Output.Value)

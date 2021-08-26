@@ -36,6 +36,9 @@ func Parse(source io.Reader) (*Transformation, error) {
 			p.scanComment()
 			continue
 		}
+		if tok == EOF {
+			break
+		}
 
 		if tok != COLUMN_ID && tok != VARIABLE && tok != HEADER {
 			return transformation, fmt.Errorf("expected column, header or variable on line %d, but found %s", lineNo, lit)
@@ -391,7 +394,6 @@ func (s *Scanner) unread() { _ = s.r.UnreadRune() }
 func (s *Scanner) Scan() (tok Token, lit string) {
 	// Read the next rune
 	ch := s.read()
-
 	// If we see whitespace then we consume all contiguous whitespace
 	// If we see a letter then consume as an ident or reserved word.
 	if isWhiteSpace(ch) {
@@ -427,7 +429,7 @@ func (s *Scanner) Scan() (tok Token, lit string) {
 	case '\n':
 		return NEWLINE, ""
 	case eof:
-		return EOF, ""
+		return EOF, "EOF"
 	case '?':
 		return PLACEHOLDER, string(ch)
 	case '+':

@@ -38,7 +38,7 @@ var parseCmd = &cobra.Command{
 }
 
 func runFakeParse(cmd *cobra.Command, args []string) {
-	incoming := "1 <- 2"
+	incoming := "!1 <- \"Column 1\" # Rename column 1 \n1 <- 2 + fake(\"name\") -> uppercase\n2 <- 1 + 2 +3 #woohoo"
 	reader := strings.NewReader(incoming)
 
 	transformation, err := recipe.Parse(reader)
@@ -48,7 +48,6 @@ func runFakeParse(cmd *cobra.Command, args []string) {
 	}
 
 	transformation.Dump(os.Stdout)
-
 }
 
 func init() {
