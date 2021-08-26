@@ -75,7 +75,7 @@ to quickly create a Cobra application.`,
 
 		transform := recipe.Transformation{
 			Variables: vars,
-			Columns:   nil,
+			Columns:   map[int]recipe.Recipe{},
 		}
 
 		vars["pewp"] = recipe.Recipe{
