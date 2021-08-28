@@ -38,6 +38,29 @@ type Argument struct {
 	Value string
 }
 
+func (a *Argument) GetValue(context LineContext) (string, error) {
+	var value string
+	switch a.Type {
+	case "column":
+		colNum, _ := strconv.Atoi(a.Value)
+		colValue, ok := context.Columns[colNum]
+		if !ok {
+			return "", fmt.Errorf("column %d referenced but it does not exist in input file", colNum)
+		}
+		value = colValue
+	case "variable":
+		varValue, ok := context.Variables[a.Value]
+		if !ok {
+			return "", fmt.Errorf("variable %s referenced but it does not exist in recipe, or it is referenced before it is defined", a.Value)
+		}
+		value = varValue
+	default:
+		return "", fmt.Errorf("argument GetValue not implemented for type %s", a.Type)
+	}
+
+	return value, nil
+}
+
 type Operation struct {
 	Name      string
 	Arguments []Argument
@@ -129,23 +152,77 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 	}
 	var linesRead int
 
-	// TODO process header
+	row, err := reader.Read()
+	if err != nil {
+		return err
+	}
+
+	var context = LineContext{
+		Variables: map[string]string{},
+		Columns:   map[int]string{},
+	}
+	// Load context with all the columns
+	for i, v := range row {
+		context.Columns[i+1] = v
+	}
+
+	// process variables
+	for v := range t.Variables {
+		variableName := t.Variables[v].Output.Value
+		variable := t.Variables[v]
+		var placeholder string
+		var value string
+		mode := "replace"
+		for _, o := range variable.Pipe {
+			switch o.Name {
+			case "value":
+				firstArg := o.Arguments[0]
+				switch firstArg.Type {
+				case "column":
+					colValue, err := firstArg.GetValue(context)
+					if err != nil {
+						return err
+					}
+					value = colValue
+				case "variable":
+					varValue, err := firstArg.GetValue(context)
+					if err != nil {
+						return err
+					}
+					value = varValue
+				default:
+					return fmt.Errorf("variable -> value unimplimented type %s", firstArg.Type)
+				}
+			case "join":
+				firstArg := o.Arguments[0]
+				mode = "join"
+				switch firstArg.Type {
+				case "placeholder":
+					value = placeholder
+
+				default:
+					return fmt.Errorf("variable -> join unimplmented argument type %s", firstArg.Type)
+				}
+				continue
+			default:
+				return fmt.Errorf("error: processing variable, unimplemented operation %s", o.Name)
+			}
+
+			// join modes
+			switch mode {
+			case "replace":
+				placeholder = value
+			case "join":
+				placeholder += value
+				mode = "replace"
+			default:
+				return fmt.Errorf("variable error: unimplemented join mode %s", mode)
+			}
+		}
+		context.Variables[variableName] = placeholder
+	}
+
 	if processHeader {
-		var context = LineContext{
-			Variables: map[string]string{},
-			Columns:   map[int]string{},
-		}
-
-		row, err := reader.Read()
-		if err != nil {
-			return err
-		}
-
-		// Load context with all the columns
-		for i, v := range row {
-			context.Columns[i+1] = v
-		}
-
 		// Load existing headers up to size of output
 		var output = make(map[int]string)
 		for i := 1; i <= numColumns; i++ {
@@ -207,7 +284,6 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 			}
 
 			output[outHeaderNumber] = placeholder
-
 		}
 
 		// convert output to string array

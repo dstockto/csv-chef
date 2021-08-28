@@ -723,42 +723,98 @@ func TestTransformation_Execute(t1 *testing.T) {
 			wantErr:     true,
 			wantErrText: "error: header for column 1 references variable '$foo' which is not defined",
 		},
-		//{
-		//	name: "headers via variables",
-		//	fields: fields{
-		//		Variables: map[string]Recipe{
-		//			"$foo": {
-		//				Output: getOutputForVariable("$foo"),
-		//				Pipe: []Operation{
-		//					getColumn("2"),
-		//				},
-		//			},
-		//		},
-		//		Columns: map[int]Recipe{
-		//			1: {
-		//				Output: getOutputForColumn("1"),
-		//				Pipe: []Operation{
-		//					getColumn("1"),
-		//				},
-		//			},
-		//		},
-		//		Headers: map[int]Recipe{
-		//			1: {
-		//				Output: getOutputForHeader("1"),
-		//				Pipe: []Operation{
-		//					getVariable("$foo"),
-		//				},
-		//			},
-		//		},
-		//	},
-		//	args: args{
-		//		input:         "apple,banana\n",
-		//		processHeader: true,
-		//	},
-		//	want:        "banana\n",
-		//	wantErr:     false,
-		//	wantErrText: "",
-		//},
+		{
+			name: "headers via variables",
+			fields: fields{
+				Variables: map[string]Recipe{
+					"$foo": {
+						Output: getOutputForVariable("$foo"),
+						Pipe: []Operation{
+							getColumn("2"),
+						},
+					},
+				},
+				Columns: map[int]Recipe{
+					1: {
+						Output: getOutputForColumn("1"),
+						Pipe: []Operation{
+							getColumn("1"),
+						},
+					},
+				},
+				Headers: map[int]Recipe{
+					1: {
+						Output: getOutputForHeader("1"),
+						Pipe: []Operation{
+							getVariable("$foo"),
+						},
+					},
+				},
+			},
+			args: args{
+				input:         "apple,banana\n",
+				processHeader: true,
+			},
+			want:        "banana\n",
+			wantErr:     false,
+			wantErrText: "",
+		},
+		{
+			name: "headers using variables referencing variables with join",
+			fields: fields{
+				Variables: map[string]Recipe{
+					"$foo": {
+						Output: getOutputForVariable("$foo"),
+						Pipe: []Operation{
+							getColumn("2"),
+						},
+					},
+					"$bar": {
+						Output: getOutputForVariable("$bar"),
+						Pipe: []Operation{
+							getColumn("1"),
+							getJoinWithPlaceholder(),
+							getVariable("$foo"),
+						},
+					},
+				},
+				Columns: map[int]Recipe{
+					1: {
+						Output: getOutputForColumn("1"),
+						Pipe: []Operation{
+							getColumn("1"),
+						},
+					},
+					2: {
+						Output: getOutputForColumn("2"),
+						Pipe: []Operation{
+							getColumn("2"),
+						},
+					},
+				},
+				Headers: map[int]Recipe{
+					1: {
+						Output: getOutputForHeader("1"),
+						Pipe: []Operation{
+							getVariable("$bar"),
+						},
+					},
+					2: {
+						Output: getOutputForHeader("2"),
+						Pipe: []Operation{
+							getColumn("1"),
+						},
+					},
+				},
+			},
+			args: args{
+				input:         "a,b\n",
+				processHeader: true,
+			},
+			want:        "ab,a\n",
+			wantErr:     false,
+			wantErrText: "",
+		},
 		//{
 		//	name: "reading column that does not exist is an error",
 		//	fields: fields{
