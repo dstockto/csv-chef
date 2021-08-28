@@ -520,12 +520,48 @@ func TestTransformation_Execute(t1 *testing.T) {
 			wantErrText: "missing column definition for column #1",
 		},
 		{
-			name: "reading column that does not exist is an error",
+			name: "referencing a header for a column that has no reference is an error",
 			fields: fields{
 				Variables: map[string]Recipe{},
 				Columns: map[int]Recipe{
 					1: {
 						Output: getOutputForColumn("1"),
+						Pipe: []Operation{
+							getLiteral("hi"),
+						},
+					},
+				},
+				Headers: map[int]Recipe{
+					2: {
+						Output: getOutputForHeader("2"),
+						Pipe: []Operation{
+							getLiteral("lala"),
+						},
+						Comment: "",
+					},
+				},
+			},
+			args: args{
+				input:         "a,b,c",
+				processHeader: true,
+			},
+			want:        "",
+			wantErr:     true,
+			wantErrText: "found header for column 2, but no recipe for column 2",
+		},
+		{
+			name: "process just headers with no recipe",
+			fields: fields{
+				Variables: map[string]Recipe{},
+				Columns: map[int]Recipe{
+					1: {
+						Output: getOutputForColumn("1"),
+						Pipe: []Operation{
+							getColumn("1"),
+						},
+					},
+					2: {
+						Output: getOutputForColumn("2"),
 						Pipe: []Operation{
 							getColumn("2"),
 						},
@@ -534,32 +570,217 @@ func TestTransformation_Execute(t1 *testing.T) {
 				Headers: map[int]Recipe{},
 			},
 			args: args{
-				input:         "a\nb\n",
-				processHeader: false,
+				input:         "a,b\n",
+				processHeader: true,
 			},
-			want:    "",
-			wantErr: true,
+			want:        "a,b\n",
+			wantErr:     false,
+			wantErrText: "",
+		},
+		{
+			name: "process header recipe with literal replacement",
+			fields: fields{
+				Variables: map[string]Recipe{},
+				Columns: map[int]Recipe{
+					1: {
+						Output: getOutputForColumn("1"),
+						Pipe: []Operation{
+							getColumn("1"),
+						},
+					},
+					2: {
+						Output: getOutputForColumn("2"),
+						Pipe: []Operation{
+							getColumn("2"),
+						},
+					},
+				},
+				Headers: map[int]Recipe{
+					1: {
+						Output: getOutputForHeader("1"),
+						Pipe: []Operation{
+							getLiteral("apple"),
+						},
+					},
+				},
+			},
+			args: args{
+				input:         "a,b\n",
+				processHeader: true,
+			},
+			want:        "apple,b\n",
+			wantErr:     false,
+			wantErrText: "",
+		},
+		{
+			name: "process header recipe with 2 literals joined",
+			fields: fields{
+				Variables: map[string]Recipe{},
+				Columns: map[int]Recipe{
+					1: {
+						Output: getOutputForColumn("1"),
+						Pipe: []Operation{
+							getColumn("1"),
+						},
+					},
+					2: {
+						Output: getOutputForColumn("2"),
+						Pipe: []Operation{
+							getColumn("2"),
+						},
+					},
+				},
+				Headers: map[int]Recipe{
+					1: {
+						Output: getOutputForHeader("1"),
+						Pipe: []Operation{
+							getLiteral("apple"),
+							getJoinWithPlaceholder(),
+							getLiteral(" pear"),
+						},
+					},
+				},
+			},
+			args: args{
+				input:         "a,b\n",
+				processHeader: true,
+			},
+			want:        "apple pear,b\n",
+			wantErr:     false,
+			wantErrText: "",
+		},
+		{
+			name: "double join flip flop headers",
+			fields: fields{
+				Variables: map[string]Recipe{},
+				Columns: map[int]Recipe{
+					1: {
+						Output: getOutputForColumn("1"),
+						Pipe: []Operation{
+							getColumn("1"),
+						},
+					},
+					2: {
+						Output: getOutputForColumn("2"),
+						Pipe: []Operation{
+							getColumn("2"),
+						},
+					},
+				},
+				Headers: map[int]Recipe{
+					1: {
+						Output: getOutputForHeader("1"),
+						Pipe: []Operation{
+							getColumn("2"),
+							getJoinWithPlaceholder(),
+							getColumn("1"),
+						},
+					},
+					2: {
+						Output: getOutputForHeader("2"),
+						Pipe: []Operation{
+							getColumn("1"),
+							getJoinWithPlaceholder(),
+							getColumn("2"),
+						},
+					},
+				},
+			},
+			args: args{
+				input:         "alpha,beta\n",
+				processHeader: true,
+			},
+			want:        "betaalpha,alphabeta\n",
+			wantErr:     false,
+			wantErrText: "",
+		},
+		{
+			name: "header referencing non-existent variable is an error",
+			fields: fields{
+				Variables: map[string]Recipe{},
+				Columns: map[int]Recipe{
+					1: {
+						Output: getOutputForColumn("1"),
+						Pipe: []Operation{
+							getColumn("1"),
+						},
+					},
+				},
+				Headers: map[int]Recipe{
+					1: {
+						Output: getOutputForHeader("1"),
+						Pipe: []Operation{
+							getVariable("$foo"),
+						},
+					},
+				},
+			},
+			args: args{
+				input:         "a,b",
+				processHeader: true,
+			},
+			want:        "",
+			wantErr:     true,
+			wantErrText: "error: header for column 1 references variable '$foo' which is not defined",
 		},
 		//{
-		//	name: "pass-through without headers (1 column)",
+		//	name: "headers via variables",
 		//	fields: fields{
-		//		Variables: map[string]Recipe{},
-		//		Columns:   map[int]Recipe{
+		//		Variables: map[string]Recipe{
+		//			"$foo": {
+		//				Output: getOutputForVariable("$foo"),
+		//				Pipe: []Operation{
+		//					getColumn("2"),
+		//				},
+		//			},
+		//		},
+		//		Columns: map[int]Recipe{
 		//			1: {
-		//				Output:  getOutputForColumn("1"),
+		//				Output: getOutputForColumn("1"),
 		//				Pipe: []Operation{
 		//					getColumn("1"),
 		//				},
 		//			},
 		//		},
-		//		Headers:   map[int]Recipe{},
+		//		Headers: map[int]Recipe{
+		//			1: {
+		//				Output: getOutputForHeader("1"),
+		//				Pipe: []Operation{
+		//					getVariable("$foo"),
+		//				},
+		//			},
+		//		},
 		//	},
 		//	args: args{
-		//		input: "fruit\napple\n",
+		//		input:         "apple,banana\n",
+		//		processHeader: true,
+		//	},
+		//	want:        "banana\n",
+		//	wantErr:     false,
+		//	wantErrText: "",
+		//},
+		//{
+		//	name: "reading column that does not exist is an error",
+		//	fields: fields{
+		//		Variables: map[string]Recipe{},
+		//		Columns: map[int]Recipe{
+		//			1: {
+		//				Output: getOutputForColumn("1"),
+		//				Pipe: []Operation{
+		//					getColumn("2"),
+		//				},
+		//			},
+		//		},
+		//		Headers: map[int]Recipe{},
+		//	},
+		//	args: args{
+		//		input:         "a\nb\n",
 		//		processHeader: false,
 		//	},
-		//	want: "fruit\napple\n",
+		//	want:    "",
+		//	wantErr: true,
 		//},
+
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {

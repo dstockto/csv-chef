@@ -130,6 +130,96 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 	var linesRead int
 
 	// TODO process header
+	if processHeader {
+		var context = LineContext{
+			Variables: map[string]string{},
+			Columns:   map[int]string{},
+		}
+
+		row, err := reader.Read()
+		if err != nil {
+			return err
+		}
+
+		// Load context with all the columns
+		for i, v := range row {
+			context.Columns[i+1] = v
+		}
+
+		// Load existing headers up to size of output
+		var output = make(map[int]string)
+		for i := 1; i <= numColumns; i++ {
+			output[i] = row[i-1]
+		}
+		fmt.Printf("%+v\n", output)
+
+		for h := range t.Headers {
+			mode := "replace"
+			placeholder := ""
+			value := ""
+			outHeader := t.Headers[h].Output.Value
+			outHeaderNumber, _ := strconv.Atoi(outHeader)
+
+			for _, o := range t.Headers[h].Pipe {
+				// Operations
+				switch o.Name {
+				case "value":
+					switch o.Arguments[0].Type {
+					case "literal":
+						value = o.Arguments[0].Value
+					case "column":
+						num, _ := strconv.Atoi(o.Arguments[0].Value)
+						value = context.Columns[num]
+					case "variable":
+						variable, ok := context.Variables[o.Arguments[0].Value]
+						if !ok {
+							return fmt.Errorf("error: header for column %d references variable '%s' which is not defined", outHeaderNumber, o.Arguments[0].Value)
+						}
+						value = variable
+					default:
+						return fmt.Errorf("unimplemented type %s for value", o.Arguments[0].Type)
+					}
+				case "join":
+					switch o.Arguments[0].Type {
+					case "placeholder":
+						value = placeholder
+						mode = "join"
+						continue
+					default:
+						return fmt.Errorf("unimplmented join arg type %s", o.Arguments[0].Type)
+					}
+				default:
+					return fmt.Errorf("unimplemented operation %s", o.Name)
+
+				}
+
+				// JOIN values
+				switch mode {
+				case "replace":
+					placeholder = value
+				case "join":
+					placeholder += value
+					mode = "replace"
+				default:
+					return fmt.Errorf("unimplemented join mode %s", mode)
+				}
+
+			}
+
+			output[outHeaderNumber] = placeholder
+
+		}
+
+		// convert output to string array
+		var outputRow []string
+		for i := 1; i <= numColumns; i++ {
+			outputRow = append(outputRow, output[i])
+		}
+		err = writer.Write(outputRow)
+		if err != nil {
+			return err
+		}
+	}
 
 	// TODO process columns
 	for {
@@ -140,6 +230,9 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 		var output = make(map[int]string)
 		// load line into context
 		row, err := reader.Read()
+		if err == io.EOF {
+			return nil
+		}
 		if err != nil {
 			return fmt.Errorf("processing line %d error: %v", linesRead, err)
 		}
@@ -148,13 +241,17 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 			context.Columns[col+1] = cell
 		}
 
-		// junk
-		output[1] = "column 1"
-		output[2] = "col 2"
-
 		// TODO process variables
+		//for v := range t.Variables {
+		//
+		//}
+
 		// TODO process columns
+		//for c := range t.Columns {
+		//
+		//}
 		// TODO write output
+		// load row into columns
 		var outputStrings []string
 		for c := 1; c <= numColumns; c++ {
 			value, ok := output[c]
@@ -169,12 +266,9 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 			return fmt.Errorf("output error: %v", err)
 		}
 
-		//row, err := reader.Read()
 		break
 	}
-
-	writer.Write([]string{"fruit", "veggie", "mineral"})
-	writer.Write([]string{"apple", "carrot", "rock"})
+	//
 	return nil
 }
 
@@ -248,6 +342,13 @@ func (t *Transformation) ValidateRecipe() error {
 	for c := 1; c <= numColumns; c++ {
 		if _, ok := t.Columns[c]; !ok {
 			return fmt.Errorf("missing column definition for column #%d", c)
+		}
+	}
+
+	// ensure there are not header recipes for a column we don't have
+	for h := range t.Headers {
+		if _, ok := t.Columns[h]; !ok {
+			return fmt.Errorf("found header for column %d, but no recipe for column %d", h, h)
 		}
 	}
 
