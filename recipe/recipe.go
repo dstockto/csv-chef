@@ -75,9 +75,10 @@ type Recipe struct {
 }
 
 type Transformation struct {
-	Variables map[string]Recipe
-	Columns   map[int]Recipe
-	Headers   map[int]Recipe
+	Variables     map[string]Recipe
+	Columns       map[int]Recipe
+	Headers       map[int]Recipe
+	VariableOrder []string
 }
 
 func (t *Transformation) Dump(w io.Writer) {

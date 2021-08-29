@@ -52,6 +52,7 @@ func Parse(source io.Reader) (*Transformation, error) {
 			targetType = "column"
 		} else if tok == VARIABLE {
 			transformation.AddOutputToVariable(lit)
+			transformation.VariableOrder = append(transformation.VariableOrder, lit)
 			targetType = "variable"
 		} else if tok == HEADER {
 			transformation.AddOutputToHeader(lit)
