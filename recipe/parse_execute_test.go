@@ -120,6 +120,20 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			processHeader: true,
 			want:          "col1,col2\nb,a\nd,c\nf,e\n",
 		},
+		{
+			name:          "column recipe, more complex",
+			recipe:        "1 <- 3 + 2\n2 <- 1 + 3\n3 <- 2 + 1\n",
+			input:         "a,b,c\nd,e,f\ng,h,i",
+			processHeader: false,
+			want:          "cb,ac,ba\nfe,df,ed\nih,gi,hg\n",
+		},
+		{
+			name:          "column recipe, same as above, but variables first",
+			recipe:        "$a <- 3+2\n$b<-1+3\n$c<-2+1\n1<-$a\n2<-$b\n3<-$c\n",
+			input:         "a,b,c\nd,e,f\ng,h,i",
+			processHeader: false,
+			want:          "cb,ac,ba\nfe,df,ed\nih,gi,hg\n",
+		},
 		// TODO need to start executing functions
 	}
 
