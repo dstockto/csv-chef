@@ -721,7 +721,7 @@ func TestTransformation_Execute(t1 *testing.T) {
 			},
 			want:        "",
 			wantErr:     true,
-			wantErrText: "error: header for column 1 references variable '$foo' which is not defined",
+			wantErrText: "variable '$foo' referenced, but it is not defined",
 		},
 		{
 			name: "headers via variables",

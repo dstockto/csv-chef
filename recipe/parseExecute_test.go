@@ -74,7 +74,7 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			input:         "a,b\n",
 			processHeader: true,
 			wantErr:       true,
-			wantErrText:   "error: header for column 1 references variable '$bar' which is not defined",
+			wantErrText:   "variable '$bar' referenced, but it is not defined",
 		},
 		{
 			name:          "headers via variables",
@@ -84,15 +84,20 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			want:          "banana\n",
 		},
 		{
-			name:             "referencing column that does not exist is an error",
-			recipe:           "",
-			input:            "",
-			processHeader:    false,
-			want:             "",
-			wantParseErr:     false,
-			wantParseErrText: "",
-			wantErr:          false,
-			wantErrText:      "",
+			name:          "referencing header column that does not exist is an error",
+			recipe:        "1 <- 1\n!1 <- 3\n",
+			input:         "a,b\n",
+			processHeader: true,
+			wantErr:       true,
+			wantErrText:   "column 3 referenced but it does not exist in input file",
+		},
+		{
+			name:          "referencing variable that is not defined is an error",
+			recipe:        "1<-1\n!1<-$foo\n",
+			input:         "a,b",
+			processHeader: true,
+			wantErr:       true,
+			wantErrText:   "variable '$foo' referenced, but it is not defined",
 		},
 	}
 

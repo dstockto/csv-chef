@@ -51,9 +51,11 @@ func (a *Argument) GetValue(context LineContext) (string, error) {
 	case "variable":
 		varValue, ok := context.Variables[a.Value]
 		if !ok {
-			return "", fmt.Errorf("variable %s referenced but it does not exist in recipe, or it is referenced before it is defined", a.Value)
+			return "", fmt.Errorf("variable '%s' referenced, but it is not defined", a.Value)
 		}
 		value = varValue
+	case "literal":
+		return a.Value, nil
 	default:
 		return "", fmt.Errorf("argument GetValue not implemented for type %s", a.Type)
 	}
@@ -241,18 +243,26 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 				// Operations
 				switch o.Name {
 				case "value":
-					switch o.Arguments[0].Type {
+					firstArg := o.Arguments[0]
+					switch firstArg.Type {
 					case "literal":
-						value = o.Arguments[0].Value
-					case "column":
-						num, _ := strconv.Atoi(o.Arguments[0].Value)
-						value = context.Columns[num]
-					case "variable":
-						variable, ok := context.Variables[o.Arguments[0].Value]
-						if !ok {
-							return fmt.Errorf("error: header for column %d references variable '%s' which is not defined", outHeaderNumber, o.Arguments[0].Value)
+						literal, err := firstArg.GetValue(context)
+						if err != nil {
+							return err
 						}
-						value = variable
+						value = literal
+					case "column":
+						colVal, err := firstArg.GetValue(context)
+						if err != nil {
+							return err
+						}
+						value = colVal
+					case "variable":
+						varVal, err := firstArg.GetValue(context)
+						if err != nil {
+							return err
+						}
+						value = varVal
 					default:
 						return fmt.Errorf("unimplemented type %s for value", o.Arguments[0].Type)
 					}
