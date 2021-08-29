@@ -14,6 +14,7 @@ var allFuncs = map[string][]int{
 	"lowercase":      {1},
 	"join":           {1},
 	"add":            {2},
+	"addfloat":       {3},
 	"today":          {0},
 	"fake":           {1},
 	"normalize_date": {1, 1},
@@ -230,7 +231,7 @@ func consumeAssignment(p *Parser) error {
 
 func consumeFunctionArgs(p *Parser, name string) (Operation, error) {
 	// check if the function even exists
-	funcArgs, ok := allFuncs[name]
+	funcArgs, ok := allFuncs[strings.ToLower(name)]
 	if !ok {
 		return Operation{}, fmt.Errorf("unrecognized function %s", name)
 	}

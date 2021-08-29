@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"strings"
 )
 
 type Output struct {
@@ -210,7 +211,11 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 			// Load existing headers up to size of output
 			var output = make(map[int]string)
 			for i := 1; i <= numColumns; i++ {
-				output[i] = row[i-1]
+				var value string
+				if i <= len(row) {
+					value = row[i-1]
+				}
+				output[i] = value
 			}
 
 			for h := range t.Headers {
@@ -271,7 +276,7 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 	var value string
 	mode := Replace
 	for _, o := range variable.Pipe {
-		switch o.Name {
+		switch strings.ToLower(o.Name) {
 		case "value":
 			firstArg := o.Arguments[0]
 			argValue, err := firstArg.GetValue(context, placeholder)
@@ -303,6 +308,26 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 				return "", fmt.Errorf("lowercase: error evaluating arg - %v", err)
 			}
 			value = Lowercase(firstArg)
+		case "add":
+			args, err := processArgs(2, o.Arguments, context, placeholder)
+			if err != nil {
+				return "", err
+			}
+			sum, err := Add(args[0], args[1])
+			if err != nil {
+				return "", err
+			}
+			value = sum
+		case "addfloat":
+			args, err := processArgs(3, o.Arguments, context, placeholder)
+			if err != nil {
+				return "", err
+			}
+			sum, err := AddFloat(args[0], args[1], args[2])
+			if err != nil {
+				return "", err
+			}
+			value = sum
 			// TODO make function calling more smart, using the allFuncs thing
 		default:
 			return "", fmt.Errorf("error: processing variable, unimplemented operation %s", o.Name)
@@ -319,6 +344,31 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 		}
 	}
 	return placeholder, nil
+}
+
+func processArgs(numArgs int, arguments []Argument, context LineContext, placeholder string) ([]string, error) {
+	for len(arguments) < numArgs {
+		arguments = append(arguments, getPlaceholderArg())
+	}
+
+	var processedArgs []string
+
+	for i := 0; i < numArgs; i++ {
+		value, err := arguments[i].GetValue(context, placeholder)
+		if err != nil {
+			return []string{}, err
+		}
+		processedArgs = append(processedArgs, value)
+	}
+
+	return processedArgs, nil
+}
+
+func getPlaceholderArg() Argument {
+	return Argument{
+		Type:  "placeholder",
+		Value: "?",
+	}
 }
 
 func (t *Transformation) AddOperationToVariable(variable string, operation Operation) {

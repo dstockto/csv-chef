@@ -169,6 +169,34 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			processHeader: false,
 			want:          "aa\nbb\n",
 		},
+		{
+			name:          "use add to sum two integer columns",
+			recipe:        "!1 <- \"fruits\"\n!2 <- \"veggies\"\n!3 <- \"total\"\n1 <- 1\n2 <- 2\n3 <- add(1,2)",
+			input:         "a,b\n1,2\n555,444\n13,31\n",
+			processHeader: true,
+			want:          "fruits,veggies,total\n1,2,3\n555,444,999\n13,31,44\n",
+		},
+		{
+			name:          "use addFloat to sum two float/int columns",
+			recipe:        "!1 <- \"fruits\"\n!2 <- \"veggies\"\n!3 <- \"total\"\n1 <- 1\n2 <- 2\n3 <- addFloat(1,2,\"2\")\n",
+			input:         "a,b\n1,2\n555.55,444.44\n13.55,31.44\n",
+			processHeader: true,
+			want:          "fruits,veggies,total\n1,2,3.00\n555.55,444.44,999.99\n13.55,31.44,44.99\n",
+		},
+		{
+			name:          "use addFloat to sum two float/int into rounded ints",
+			recipe:        "!1 <- \"fruits\"\n!2 <- \"veggies\"\n!3 <- \"total\"\n1 <- 1\n2 <- 2\n3 <- addFloat(1,2,\"0\")\n",
+			input:         "a,b\n1,2\n555.55,444.44\n13.55,31.44\n",
+			processHeader: true,
+			want:          "fruits,veggies,total\n1,2,3\n555.55,444.44,1000\n13.55,31.44,45\n",
+		},
+		{
+			name:          "use addFloat to sum two float/int with no rounding",
+			recipe:        "!1 <- \"fruits\"\n!2 <- \"veggies\"\n!3 <- \"total\"\n1 <- 1\n2 <- 2\n3 <- addFloat(1,2,\"-1\")\n",
+			input:         "a,b\n1,2\n555.55,444.44\n13.55,31.44\n",
+			processHeader: true,
+			want:          "fruits,veggies,total\n1,2,3.000000\n555.55,444.44,999.990000\n13.55,31.44,44.990000\n",
+		},
 	}
 
 	for _, tt := range tests {
