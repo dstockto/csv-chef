@@ -170,7 +170,7 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 	}
 
 	// process variables
-	for v := range t.Variables {
+	for _, v := range t.VariableOrder {
 		variableName := t.Variables[v].Output.Value
 		variable := t.Variables[v]
 		var placeholder string
