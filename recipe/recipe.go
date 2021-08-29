@@ -13,6 +13,24 @@ type Output struct {
 	Value string
 }
 
+type JoinMode int
+
+const (
+	Replace JoinMode = iota
+	Join
+)
+
+func (j *JoinMode) String() string {
+	switch *j {
+	case Replace:
+		return "replace"
+	case Join:
+		return "join"
+	default:
+		return "unknown join type"
+	}
+}
+
 func (o *Output) GetValue(ctx LineContext) (string, error) {
 	if o.Type == "variable" {
 		value, ok := ctx.Variables[o.Value]
@@ -38,7 +56,7 @@ type Argument struct {
 	Value string
 }
 
-func (a *Argument) GetValue(context LineContext) (string, error) {
+func (a *Argument) GetValue(context LineContext, placeholder string) (string, error) {
 	var value string
 	switch a.Type {
 	case "column":
@@ -56,6 +74,8 @@ func (a *Argument) GetValue(context LineContext) (string, error) {
 		value = varValue
 	case "literal":
 		return a.Value, nil
+	case "placeholder":
+		return placeholder, nil
 	default:
 		return "", fmt.Errorf("argument GetValue not implemented for type %s", a.Type)
 	}
@@ -155,210 +175,134 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 	}
 	var linesRead int
 
-	row, err := reader.Read()
-	if err != nil {
-		return err
-	}
+	for {
 
-	var context = LineContext{
-		Variables: map[string]string{},
-		Columns:   map[int]string{},
-	}
-	// Load context with all the columns
-	for i, v := range row {
-		context.Columns[i+1] = v
-	}
-
-	// process variables
-	for _, v := range t.VariableOrder {
-		variableName := t.Variables[v].Output.Value
-		variable := t.Variables[v]
-		var placeholder string
-		var value string
-		mode := "replace"
-		for _, o := range variable.Pipe {
-			switch o.Name {
-			case "value":
-				firstArg := o.Arguments[0]
-				switch firstArg.Type {
-				case "column":
-					colValue, err := firstArg.GetValue(context)
-					if err != nil {
-						return err
-					}
-					value = colValue
-				case "variable":
-					varValue, err := firstArg.GetValue(context)
-					if err != nil {
-						return err
-					}
-					value = varValue
-				default:
-					return fmt.Errorf("variable -> value unimplimented type %s", firstArg.Type)
-				}
-			case "join":
-				firstArg := o.Arguments[0]
-				mode = "join"
-				switch firstArg.Type {
-				case "placeholder":
-					value = placeholder
-
-				default:
-					return fmt.Errorf("variable -> join unimplmented argument type %s", firstArg.Type)
-				}
-				continue
-			default:
-				return fmt.Errorf("error: processing variable, unimplemented operation %s", o.Name)
-			}
-
-			// join modes
-			switch mode {
-			case "replace":
-				placeholder = value
-			case "join":
-				placeholder += value
-				mode = "replace"
-			default:
-				return fmt.Errorf("variable error: unimplemented join mode %s", mode)
-			}
+		row, err := reader.Read()
+		if err == io.EOF {
+			break
 		}
-		context.Variables[variableName] = placeholder
-	}
-
-	if processHeader {
-		// Load existing headers up to size of output
-		var output = make(map[int]string)
-		for i := 1; i <= numColumns; i++ {
-			output[i] = row[i-1]
-		}
-		fmt.Printf("%+v\n", output)
-
-		for h := range t.Headers {
-			mode := "replace"
-			placeholder := ""
-			value := ""
-			outHeader := t.Headers[h].Output.Value
-			outHeaderNumber, _ := strconv.Atoi(outHeader)
-
-			for _, o := range t.Headers[h].Pipe {
-				// Operations
-				switch o.Name {
-				case "value":
-					firstArg := o.Arguments[0]
-					switch firstArg.Type {
-					case "literal":
-						literal, err := firstArg.GetValue(context)
-						if err != nil {
-							return err
-						}
-						value = literal
-					case "column":
-						colVal, err := firstArg.GetValue(context)
-						if err != nil {
-							return err
-						}
-						value = colVal
-					case "variable":
-						varVal, err := firstArg.GetValue(context)
-						if err != nil {
-							return err
-						}
-						value = varVal
-					case "placeholder":
-						value = placeholder
-					default:
-						return fmt.Errorf("unimplemented type %s for value", o.Arguments[0].Type)
-					}
-				case "join":
-					switch o.Arguments[0].Type {
-					case "placeholder":
-						value = placeholder
-						mode = "join"
-						continue
-					default:
-						return fmt.Errorf("unimplmented join arg type %s", o.Arguments[0].Type)
-					}
-				default:
-					return fmt.Errorf("unimplemented operation %s", o.Name)
-
-				}
-
-				// JOIN values
-				switch mode {
-				case "replace":
-					placeholder = value
-				case "join":
-					placeholder += value
-					mode = "replace"
-				default:
-					return fmt.Errorf("unimplemented join mode %s", mode)
-				}
-
-			}
-
-			output[outHeaderNumber] = placeholder
-		}
-
-		// convert output to string array
-		var outputRow []string
-		for i := 1; i <= numColumns; i++ {
-			outputRow = append(outputRow, output[i])
-		}
-		err = writer.Write(outputRow)
 		if err != nil {
 			return err
 		}
-	}
-
-	// TODO process columns
-	for {
-		var context = LineContext{
-			Variables: make(map[string]string),
-			Columns:   make(map[int]string),
-		}
-		var output = make(map[int]string)
-		// load line into context
-		row, err := reader.Read()
-		if err == io.EOF {
-			return nil
-		}
-		if err != nil {
-			return fmt.Errorf("processing line %d error: %v", linesRead, err)
-		}
 		linesRead++
-		for col, cell := range row {
-			context.Columns[col+1] = cell
+
+		var context = LineContext{
+			Variables: map[string]string{},
+			Columns:   map[int]string{},
+		}
+		// Load context with all the columns
+		for i, v := range row {
+			context.Columns[i+1] = v
 		}
 
-		// TODO process variables
-		//for v := range t.Variables {
-		//
-		//}
-
-		// TODO process columns
-		//for c := range t.Columns {
-		//
-		//}
-		// TODO write output
-		// load row into columns
-		var outputStrings []string
-		for c := 1; c <= numColumns; c++ {
-			value, ok := output[c]
-			if !ok {
-				return fmt.Errorf("internal logic error: expected to find output for column %d, but nothing was found", c)
+		// process variables
+		for _, v := range t.VariableOrder {
+			variableName := t.Variables[v].Output.Value
+			variableRecipe := t.Variables[v]
+			placeholder, err := t.processRecipe("variable", variableRecipe, context)
+			if err != nil {
+				return err
 			}
-			outputStrings = append(outputStrings, value)
+			context.Variables[variableName] = placeholder
 		}
 
-		err = writer.Write(outputStrings)
-		if err != nil {
-			return fmt.Errorf("output error: %v", err)
+		if processHeader && linesRead == 1 {
+			// Load existing headers up to size of output
+			var output = make(map[int]string)
+			for i := 1; i <= numColumns; i++ {
+				output[i] = row[i-1]
+			}
+
+			for h := range t.Headers {
+				headerRecipe := t.Headers[h]
+				placeholder, err := t.processRecipe("header", headerRecipe, context)
+				if err != nil {
+					return err
+				}
+				output[h] = placeholder
+			}
+
+			err := t.outputCsvRow(numColumns, output, writer)
+			if err != nil {
+				return err
+			}
 		}
 
-		break
+		if !processHeader || linesRead > 1 {
+			var output = make(map[int]string)
+
+			for c := range t.Columns {
+				columnRecipe := t.Columns[c]
+				placeholder, err := t.processRecipe("column", columnRecipe, context)
+				if err != nil {
+					return err
+				}
+				output[c] = placeholder
+			}
+
+			err := t.outputCsvRow(numColumns, output, writer)
+			if err != nil {
+				return err
+			}
+		}
+
+		if linesRead%100 == 0 {
+			writer.Flush()
+		}
 	}
-	//
+
 	return nil
+}
+
+func (t *Transformation) outputCsvRow(numColumns int, output map[int]string, writer *csv.Writer) error {
+	var outputRow []string
+	for i := 1; i <= numColumns; i++ {
+		outputRow = append(outputRow, output[i])
+	}
+	err := writer.Write(outputRow)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (t *Transformation) processRecipe(recipeType string, variable Recipe, context LineContext) (string, error) {
+	var placeholder string
+	var value string
+	mode := Replace
+	for _, o := range variable.Pipe {
+		switch o.Name {
+		case "value":
+			firstArg := o.Arguments[0]
+			argValue, err := firstArg.GetValue(context, placeholder)
+			if err != nil {
+				return "", err
+			}
+			value = argValue
+		case "join":
+			firstArg := o.Arguments[0]
+			mode = Join
+			argValue, err := firstArg.GetValue(context, placeholder)
+			if err != nil {
+				return "", err
+			}
+			value = argValue
+			continue
+		default:
+			return "", fmt.Errorf("error: processing variable, unimplemented operation %s", o.Name)
+		}
+
+		switch mode {
+		case Replace:
+			placeholder = value
+		case Join:
+			placeholder += value
+			mode = Replace
+		default:
+			return "", fmt.Errorf("invalid join mode %d", mode)
+		}
+	}
+	return placeholder, nil
 }
 
 func (t *Transformation) AddOperationToVariable(variable string, operation Operation) {

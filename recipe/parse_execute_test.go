@@ -113,6 +113,14 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			processHeader: true,
 			want:          "abababab\n",
 		},
+		{
+			name:          "headers and column recipe, swap columns",
+			recipe:        "!1 <- \"col1\"\n!2<-\"col2\"\n1<-2\n2<-1",
+			input:         "first,last\na,b\nc,d\ne,f",
+			processHeader: true,
+			want:          "col1,col2\nb,a\nd,c\nf,e\n",
+		},
+		// TODO need to start executing functions
 	}
 
 	for _, tt := range tests {
