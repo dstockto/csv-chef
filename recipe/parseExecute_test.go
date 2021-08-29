@@ -99,6 +99,20 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			wantErr:       true,
 			wantErrText:   "variable '$foo' referenced, but it is not defined",
 		},
+		{
+			name:          "double header using placeholder concatenation",
+			recipe:        "!1 <- 1 + ?\n1<-1\n",
+			input:         "ab,c\n",
+			processHeader: true,
+			want:          "abab\n",
+		},
+		{
+			name:          "quad header using placeholder concatenation",
+			recipe:        "!1 <- 1 + ? + ?\n1<-1\n",
+			input:         "ab,c\n",
+			processHeader: true,
+			want:          "abababab\n",
+		},
 	}
 
 	for _, tt := range tests {

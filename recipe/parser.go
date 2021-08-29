@@ -133,6 +133,10 @@ func Parse(source io.Reader) (*Transformation, error) {
 					return nil, err
 				}
 				transformation.AddOperationByType(targetType, target, operation)
+			case PLACEHOLDER:
+				transformation.AddOperationByType(targetType, target, getPlaceholder())
+			default:
+				return nil, fmt.Errorf("unexpected token [%d]-'%s' in parse loop", tok, lit)
 			}
 		}
 	}
@@ -157,6 +161,15 @@ func getColumn(lit string) Operation {
 		},
 	}
 	return op
+}
+
+func getPlaceholder() Operation {
+	return Operation{
+		Name: "value",
+		Arguments: []Argument{
+			placeholderArg(),
+		},
+	}
 }
 
 func getFunction(name string, args []Argument) Operation {

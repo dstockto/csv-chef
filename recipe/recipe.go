@@ -263,6 +263,8 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 							return err
 						}
 						value = varVal
+					case "placeholder":
+						value = placeholder
 					default:
 						return fmt.Errorf("unimplemented type %s for value", o.Arguments[0].Type)
 					}

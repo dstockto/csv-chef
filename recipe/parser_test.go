@@ -545,6 +545,26 @@ func TestParse(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "parse header with joined with placeholder",
+			args: args{source: strings.NewReader("!1 <- 1 + ?")},
+			want: &Transformation{
+				Variables: map[string]Recipe{},
+				Columns:   map[int]Recipe{},
+				Headers: map[int]Recipe{
+					1: {
+						Output: getOutputForHeader("1"),
+						Pipe: []Operation{
+							getColumn("1"),
+							getJoinWithPlaceholder(),
+							getPlaceholder(),
+						},
+						Comment: "",
+					},
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
