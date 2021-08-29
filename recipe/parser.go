@@ -13,9 +13,9 @@ var allFuncs = map[string][]int{
 	"uppercase":      {1},
 	"lowercase":      {1},
 	"join":           {1},
+	"add":            {2},
 	"today":          {0},
 	"fake":           {1},
-	"add":            {2},
 	"normalize_date": {1, 1},
 }
 

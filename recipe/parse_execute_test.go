@@ -141,6 +141,34 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			processHeader: true,
 			want:          "FRUIT,veggies\nAPPLE,artichoke\nBANANA,beet\nCUCUMBER,carrot\n",
 		},
+		{
+			name:          "same as above but not using placeholder",
+			recipe:        "!1 <- \"FRUIT\"\n1 <- uppercase(1)\n!2 <- \"veggies\"\n2 <- lowercase(2)",
+			input:         "thing1,thing2\napple,artichoke\nBANANA,BEET\nCucumber,Carrot\n",
+			processHeader: true,
+			want:          "FRUIT,veggies\nAPPLE,artichoke\nBANANA,beet\nCUCUMBER,carrot\n",
+		},
+		{
+			name:          "using join as a pipe function",
+			recipe:        "1 <- 1 -> join -> 1",
+			input:         "a\nb\n",
+			processHeader: false,
+			want:          "aa\nbb\n",
+		},
+		{
+			name:          "using join as a function",
+			recipe:        "1 <- 1 -> join(1)",
+			input:         "a\nb\n",
+			processHeader: false,
+			want:          "aa\nbb\n",
+		},
+		{
+			name:          "using join as a function and joining to it",
+			recipe:        "1 <- 1 + join(1)",
+			input:         "a\nb\n",
+			processHeader: false,
+			want:          "aa\nbb\n",
+		},
 	}
 
 	for _, tt := range tests {

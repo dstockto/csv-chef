@@ -287,7 +287,10 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 				return "", err
 			}
 			value = argValue
-			continue
+			// If the argument is placeholder then there's something coming after
+			if firstArg.Type == "placeholder" {
+				continue
+			}
 		case "uppercase":
 			firstArg, err := o.Arguments[0].GetValue(context, placeholder)
 			if err != nil {
