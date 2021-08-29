@@ -197,6 +197,38 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			processHeader: true,
 			want:          "fruits,veggies,total\n1,2,3.000000\n555.55,444.44,999.990000\n13.55,31.44,44.990000\n",
 		},
+		{
+			name:          "add with non-int arg1 is an error",
+			recipe:        "1 <- add(1, 2)\n",
+			input:         "a,2\n",
+			processHeader: false,
+			wantErr:       true,
+			wantErrText:   "first arg to Add was not an integer: a",
+		},
+		{
+			name:          "add with non-int arg2 is an error",
+			recipe:        "1 <- add(2,1)\n",
+			input:         "a,2\n",
+			processHeader: false,
+			wantErr:       true,
+			wantErrText:   "second arg to Add was not an integer: a",
+		},
+		{
+			name:          "addFloat with non-int arg1 is an error",
+			recipe:        "1 <- addfloat(1, 2)\n",
+			input:         "a,2\n",
+			processHeader: false,
+			wantErr:       true,
+			wantErrText:   "first arg to AddFloat was not numeric: a",
+		},
+		{
+			name:          "addFloat with non-int arg2 is an error",
+			recipe:        "1 <- addfloat(2, 1)\n",
+			input:         "a,2\n",
+			processHeader: false,
+			wantErr:       true,
+			wantErrText:   "second arg to AddFloat was not numeric: a",
+		},
 	}
 
 	for _, tt := range tests {
@@ -218,7 +250,7 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("execute error = %v, wantErr %v", err, tt.wantErr)
 			}
-			if tt.wantErr && err.Error() != tt.wantErrText {
+			if tt.wantErr && (err != nil) && err.Error() != tt.wantErrText {
 				t.Errorf("got execute error text = %v, want error text = %v", err.Error(), tt.wantErrText)
 			}
 
