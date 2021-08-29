@@ -269,6 +269,21 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			wantErr:       true,
 			wantErrText:   "line 1 / column 2: addfloat() - error evaluating arg: column 3 referenced, but it does not exist in the input",
 		},
+		{
+			name:          "chain of change calls",
+			recipe:        "1 <- 1 -> change(\"acc\", \"accepted\") -> change(\"rej\", \"rejected\") -> change(\"mailed\", \"outbound\") -> uppercase",
+			input:         "status\nacc\nrej\nmailed\n",
+			processHeader: true,
+			want:          "status\nACCEPTED\nREJECTED\nOUTBOUND\n",
+		},
+		{
+			name:          "chain call with bad reference is an error",
+			recipe:        "1 <- 1 -> change(\"foo\", $foo)",
+			input:         "a,b\n",
+			processHeader: false,
+			wantErr:       true,
+			wantErrText:   "line 1 / column 1: change() - error evaluating arg: variable '$foo' referenced, but it is not defined",
+		},
 	}
 
 	for _, tt := range tests {

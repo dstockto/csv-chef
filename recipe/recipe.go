@@ -332,6 +332,13 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 				return "", fmt.Errorf("%s addfloat() - %v", errorPrefix, err)
 			}
 			value = sum
+		case "change":
+			args, err := processArgs(3, o.Arguments, context, placeholder)
+			if err != nil {
+				return "", fmt.Errorf("%s change() - error evaluating arg: %v", errorPrefix, err)
+			}
+			updated, _ := Change(args[0], args[1], args[2]) // no errors from this
+			value = updated
 			// TODO make function calling more smart, using the allFuncs thing
 		default:
 			return "", fmt.Errorf("%s error: processing variable, unimplemented operation %s", errorPrefix, o.Name)

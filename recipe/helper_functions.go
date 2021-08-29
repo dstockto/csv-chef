@@ -76,6 +76,13 @@ func AddFloat(x string, y string, decimals string) (string, error) {
 	return fmt.Sprintf(format, sum), nil
 }
 
+func Change(from string, to string, input string) (string, error) {
+	if input == from {
+		return to, nil
+	}
+	return input, nil
+}
+
 func MassProcess(incoming []string, processor Processor) (out []string) {
 	for _, s := range incoming {
 		out = append(out, processor(s))
