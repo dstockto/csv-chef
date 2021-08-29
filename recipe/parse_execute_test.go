@@ -74,7 +74,7 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			input:         "a,b\n",
 			processHeader: true,
 			wantErr:       true,
-			wantErrText:   "variable '$bar' referenced, but it is not defined",
+			wantErrText:   "line 1 / header 1: variable '$bar' referenced, but it is not defined",
 		},
 		{
 			name:          "headers via variables",
@@ -89,7 +89,7 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			input:         "a,b\n",
 			processHeader: true,
 			wantErr:       true,
-			wantErrText:   "column 3 referenced but it does not exist in input file",
+			wantErrText:   "line 1 / header 1: column 3 referenced, but it does not exist in the input",
 		},
 		{
 			name:          "referencing variable that is not defined is an error",
@@ -97,7 +97,7 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			input:         "a,b",
 			processHeader: true,
 			wantErr:       true,
-			wantErrText:   "variable '$foo' referenced, but it is not defined",
+			wantErrText:   "line 1 / header 1: variable '$foo' referenced, but it is not defined",
 		},
 		{
 			name:          "double header using placeholder concatenation",
@@ -203,7 +203,7 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			input:         "a,2\n",
 			processHeader: false,
 			wantErr:       true,
-			wantErrText:   "first arg to Add was not an integer: a",
+			wantErrText:   "line 1 / column 1: add() - first arg to Add was not an integer: a",
 		},
 		{
 			name:          "add with non-int arg2 is an error",
@@ -211,7 +211,7 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			input:         "a,2\n",
 			processHeader: false,
 			wantErr:       true,
-			wantErrText:   "second arg to Add was not an integer: a",
+			wantErrText:   "line 1 / column 1: add() - second arg to Add was not an integer: a",
 		},
 		{
 			name:          "addFloat with non-int arg1 is an error",
@@ -219,15 +219,55 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			input:         "a,2\n",
 			processHeader: false,
 			wantErr:       true,
-			wantErrText:   "first arg to AddFloat was not numeric: a",
+			wantErrText:   "line 1 / column 1: addfloat() - first arg to AddFloat was not numeric: a",
 		},
 		{
 			name:          "addFloat with non-int arg2 is an error",
-			recipe:        "1 <- addfloat(2, 1)\n",
-			input:         "a,2\n",
+			recipe:        "1 <- addfloat(2, 1, \"0\")\n",
+			input:         "1,2\na,2\n",
 			processHeader: false,
 			wantErr:       true,
-			wantErrText:   "second arg to AddFloat was not numeric: a",
+			wantErrText:   "line 2 / column 1: addfloat() - second arg to AddFloat was not numeric: a",
+		},
+		{
+			name:          "join with column that does not exist is an error",
+			recipe:        "1 <- 1 -> join(3)\n",
+			input:         "a,b\n",
+			processHeader: false,
+			wantErr:       true,
+			wantErrText:   "line 1 / column 1: column 3 referenced, but it does not exist in the input",
+		},
+		{
+			name:          "uppercase with bad reference is an error",
+			recipe:        "1 <- uppercase($foo)\n",
+			input:         "a,b\n",
+			processHeader: false,
+			wantErr:       true,
+			wantErrText:   "line 1 / column 1: uppercase: error evaluating arg - variable '$foo' referenced, but it is not defined",
+		},
+		{
+			name:          "lowercase with bad reference is an error",
+			recipe:        "1 <- lowercase($bar)\n",
+			input:         "a,b\n",
+			processHeader: false,
+			wantErr:       true,
+			wantErrText:   "line 1 / column 1: lowercase: error evaluating arg - variable '$bar' referenced, but it is not defined",
+		},
+		{
+			name:          "add with bad reference is an error",
+			recipe:        "1 <- add($bar, 1)\n",
+			input:         "a,b\n",
+			processHeader: false,
+			wantErr:       true,
+			wantErrText:   "line 1 / column 1: add() error evaluating arg - variable '$bar' referenced, but it is not defined",
+		},
+		{
+			name:          "addfloat with bad reference is an error",
+			recipe:        "1 <- add(1,1)\n2<- addFloat(2,3)\n",
+			input:         "1,2.0\n",
+			processHeader: false,
+			wantErr:       true,
+			wantErrText:   "line 1 / column 2: addfloat() - error evaluating arg: column 3 referenced, but it does not exist in the input",
 		},
 	}
 
@@ -252,6 +292,10 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			}
 			if tt.wantErr && (err != nil) && err.Error() != tt.wantErrText {
 				t.Errorf("got execute error text = %v, want error text = %v", err.Error(), tt.wantErrText)
+			}
+			if tt.wantErr {
+				// Leave test here because if we're testing for an error, we aren't testing for output
+				return
 			}
 
 			got := b.String()

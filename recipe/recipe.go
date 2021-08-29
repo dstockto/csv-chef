@@ -64,7 +64,7 @@ func (a *Argument) GetValue(context LineContext, placeholder string) (string, er
 		colNum, _ := strconv.Atoi(a.Value)
 		colValue, ok := context.Columns[colNum]
 		if !ok {
-			return "", fmt.Errorf("column %d referenced but it does not exist in input file", colNum)
+			return "", fmt.Errorf("column %d referenced, but it does not exist in the input", colNum)
 		}
 		value = colValue
 	case "variable":
@@ -190,6 +190,7 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 		var context = LineContext{
 			Variables: map[string]string{},
 			Columns:   map[int]string{},
+			LineNo:    linesRead,
 		}
 		// Load context with all the columns
 		for i, v := range row {
@@ -245,7 +246,7 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 				output[c] = placeholder
 			}
 
-			err := t.outputCsvRow(numColumns, output, writer)
+			err = t.outputCsvRow(numColumns, output, writer)
 			if err != nil {
 				return err
 			}
@@ -275,13 +276,16 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 	var placeholder string
 	var value string
 	mode := Replace
+
+	errorPrefix := fmt.Sprintf("line %d / %s %s:", context.LineNo, recipeType, variable.Output.Value)
+
 	for _, o := range variable.Pipe {
 		switch strings.ToLower(o.Name) {
 		case "value":
 			firstArg := o.Arguments[0]
 			argValue, err := firstArg.GetValue(context, placeholder)
 			if err != nil {
-				return "", err
+				return "", fmt.Errorf("%s %v", errorPrefix, err)
 			}
 			value = argValue
 		case "join":
@@ -289,7 +293,7 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 			mode = Join
 			argValue, err := firstArg.GetValue(context, placeholder)
 			if err != nil {
-				return "", err
+				return "", fmt.Errorf("%s %v", errorPrefix, err)
 			}
 			value = argValue
 			// If the argument is placeholder then there's something coming after
@@ -299,38 +303,38 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 		case "uppercase":
 			firstArg, err := o.Arguments[0].GetValue(context, placeholder)
 			if err != nil {
-				return "", fmt.Errorf("uppercase: error evaluating arg - %v", err)
+				return "", fmt.Errorf("%s uppercase: error evaluating arg - %v", errorPrefix, err)
 			}
 			value = Uppercase(firstArg)
 		case "lowercase":
 			firstArg, err := o.Arguments[0].GetValue(context, placeholder)
 			if err != nil {
-				return "", fmt.Errorf("lowercase: error evaluating arg - %v", err)
+				return "", fmt.Errorf("%s lowercase: error evaluating arg - %v", errorPrefix, err)
 			}
 			value = Lowercase(firstArg)
 		case "add":
 			args, err := processArgs(2, o.Arguments, context, placeholder)
 			if err != nil {
-				return "", err
+				return "", fmt.Errorf("%s add() error evaluating arg - %v", errorPrefix, err)
 			}
 			sum, err := Add(args[0], args[1])
 			if err != nil {
-				return "", err
+				return "", fmt.Errorf("%s add() - %v", errorPrefix, err)
 			}
 			value = sum
 		case "addfloat":
 			args, err := processArgs(3, o.Arguments, context, placeholder)
 			if err != nil {
-				return "", err
+				return "", fmt.Errorf("%s addfloat() - error evaluating arg: %v", errorPrefix, err)
 			}
 			sum, err := AddFloat(args[0], args[1], args[2])
 			if err != nil {
-				return "", err
+				return "", fmt.Errorf("%s addfloat() - %v", errorPrefix, err)
 			}
 			value = sum
 			// TODO make function calling more smart, using the allFuncs thing
 		default:
-			return "", fmt.Errorf("error: processing variable, unimplemented operation %s", o.Name)
+			return "", fmt.Errorf("%s error: processing variable, unimplemented operation %s", errorPrefix, o.Name)
 		}
 
 		switch mode {
@@ -457,6 +461,7 @@ func (t *Transformation) ValidateRecipe() error {
 type LineContext struct {
 	Variables map[string]string
 	Columns   map[int]string
+	LineNo    int
 }
 
 func NewTransformation() *Transformation {
