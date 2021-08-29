@@ -134,7 +134,13 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			processHeader: false,
 			want:          "cb,ac,ba\nfe,df,ed\nih,gi,hg\n",
 		},
-		// TODO need to start executing functions
+		{
+			name:          "upper 1, lower 2 - function test #1",
+			recipe:        "!1 <- \"FRUIT\"\n1 <- 1 -> uppercase\n!2 <- \"veggies\"\n2 <- 2 -> lowercase",
+			input:         "thing1,thing2\napple,artichoke\nBANANA,BEET\nCucumber,Carrot\n",
+			processHeader: true,
+			want:          "FRUIT,veggies\nAPPLE,artichoke\nBANANA,beet\nCUCUMBER,carrot\n",
+		},
 	}
 
 	for _, tt := range tests {

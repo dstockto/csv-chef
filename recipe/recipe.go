@@ -288,6 +288,19 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 			}
 			value = argValue
 			continue
+		case "uppercase":
+			firstArg, err := o.Arguments[0].GetValue(context, placeholder)
+			if err != nil {
+				return "", fmt.Errorf("uppercase: error evaluating arg - %v", err)
+			}
+			value = Uppercase(firstArg)
+		case "lowercase":
+			firstArg, err := o.Arguments[0].GetValue(context, placeholder)
+			if err != nil {
+				return "", fmt.Errorf("lowercase: error evaluating arg - %v", err)
+			}
+			value = Lowercase(firstArg)
+			// TODO make function calling more smart, using the allFuncs thing
 		default:
 			return "", fmt.Errorf("error: processing variable, unimplemented operation %s", o.Name)
 		}

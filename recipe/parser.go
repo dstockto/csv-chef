@@ -11,6 +11,7 @@ import (
 
 var allFuncs = map[string][]int{
 	"uppercase":      {1},
+	"lowercase":      {1},
 	"join":           {1},
 	"today":          {0},
 	"fake":           {1},
