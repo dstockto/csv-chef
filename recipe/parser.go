@@ -16,6 +16,7 @@ var allFuncs = map[string][]int{
 	"add":          {2},
 	"subtract":     {2},
 	"multiply":     {2},
+	"divide":       {2},
 	"change":       {3},
 	"changei":      {3},
 	"ifempty":      {3},

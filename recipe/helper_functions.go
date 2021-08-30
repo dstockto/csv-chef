@@ -1,6 +1,7 @@
 package recipe
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"regexp"
@@ -78,6 +79,24 @@ func Multiply(x string, y string) (string, error) {
 
 	product := xnum * ynum
 	return fmt.Sprintf("%f", product), nil
+}
+
+func Divide(x string, y string) (string, error) {
+	xnum, err := strconv.ParseFloat(x, 64)
+	if err != nil {
+		return "", fmt.Errorf("error: first arg to divide was not numeric, got '%s'", x)
+	}
+	ynum, err := strconv.ParseFloat(y, 64)
+	if err != nil {
+		return "", fmt.Errorf("error: second arg to divide was not numeric, got '%s'", y)
+	}
+
+	if ynum == 0.0 {
+		return "", errors.New("error: attempt to divide by zero")
+	}
+
+	result := xnum / ynum
+	return fmt.Sprintf("%f", result), nil
 }
 
 func NumberFormat(digits string, input string) (string, error) {

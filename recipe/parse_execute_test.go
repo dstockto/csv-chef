@@ -362,6 +362,39 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			wantErr:     true,
 			wantErrText: "line 2 / column 1: multiply(): error: second arg to multiply was not numeric, got 'def'",
 		},
+		{
+			name:   "divide provides the answer to dividing two numbers",
+			recipe: "1 <- divide(1,2)\n",
+			input:  "1000,100\n22,7\n",
+			want:   "10.000000\n3.142857\n",
+		},
+		{
+			name:   "test divide with numberFormat to provide the answer to dividing two numbers",
+			recipe: "1 <- divide(1,2) -> numberFormat(\"2\")",
+			input:  "1000,100\n22,7\n",
+			want:   "10.00\n3.14\n",
+		},
+		{
+			name:        "divide has an error if the first argument is not numeric",
+			recipe:      "1 <- divide(1,2)\n",
+			input:       "apple,5",
+			wantErr:     true,
+			wantErrText: "line 1 / column 1: divide(): error: first arg to divide was not numeric, got 'apple'",
+		},
+		{
+			name:        "divide has an error if the second argument is not numeric",
+			recipe:      "1 <- divide(1,2)\n",
+			input:       "13.2,salami",
+			wantErr:     true,
+			wantErrText: "line 1 / column 1: divide(): error: second arg to divide was not numeric, got 'salami'",
+		},
+		{
+			name:        "divide has an error if the second argument is zero",
+			recipe:      "$foo <- subtract(1,2)\n1<-divide(1,$foo)\n",
+			input:       "4,4\n",
+			wantErr:     true,
+			wantErrText: "line 1 / column 1: divide(): error: attempt to divide by zero",
+		},
 	}
 
 	for _, tt := range tests {
