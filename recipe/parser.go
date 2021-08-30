@@ -10,14 +10,15 @@ import (
 )
 
 var allFuncs = map[string][]int{
-	"uppercase": {1},
-	"lowercase": {1},
-	"join":      {1},
-	"add":       {2},
-	"subtract":  {2},
-	"change":    {3},
-	"changei":   {3},
-	"ifempty":   {3},
+	"uppercase":    {1},
+	"lowercase":    {1},
+	"join":         {1},
+	"add":          {2},
+	"subtract":     {2},
+	"change":       {3},
+	"changei":      {3},
+	"ifempty":      {3},
+	"numberformat": {2},
 
 	"today":          {0},
 	"fake":           {1},

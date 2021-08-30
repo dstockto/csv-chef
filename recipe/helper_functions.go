@@ -66,6 +66,22 @@ func Subtract(x string, y string) (string, error) {
 	return fmt.Sprintf("%f", difference), nil
 }
 
+func NumberFormat(digits string, input string) (string, error) {
+	digitsNum, err := strconv.Atoi(digits)
+	if err != nil {
+		return "", fmt.Errorf("error: digits must be an integer, got '%s'", digits)
+	}
+
+	inputNum, err := strconv.ParseFloat(input, 64)
+	if err != nil {
+		return "", fmt.Errorf("error: input is not numeric: got '%s'", input)
+	}
+
+	format := fmt.Sprintf("%%.%df", digitsNum)
+
+	return fmt.Sprintf(format, inputNum), nil
+}
+
 func Change(from string, to string, input string) (string, error) {
 	if input == from {
 		return to, nil

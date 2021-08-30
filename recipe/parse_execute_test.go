@@ -322,6 +322,26 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			wantErr:     true,
 			wantErrText: "line 1 / column 1: subtract() - error evaluating arg: variable '$foo' referenced, but it is not defined",
 		},
+		{
+			name:   "numberFormat can limit decimals on a number",
+			recipe: "1 <- 1->numberFormat(\"2\")\n",
+			input:  "46.2577000",
+			want:   "46.26\n",
+		},
+		{
+			name:        "numberFormat will error if input is not numeric",
+			recipe:      "1 <- 1->numberFormat(\"2\")",
+			input:       "2.3\nalpha\n",
+			wantErr:     true,
+			wantErrText: "line 2 / column 1: numberformat() - error: input is not numeric: got 'alpha'",
+		},
+		{
+			name:        "numberFormat will error if digits parameter is not a whole number numeric",
+			recipe:      "1 <- 1 -> numberFormat(2)",
+			input:       "2.3,beta",
+			wantErr:     true,
+			wantErrText: "line 1 / column 1: numberformat() - error: digits must be an integer, got 'beta'",
+		},
 	}
 
 	for _, tt := range tests {
