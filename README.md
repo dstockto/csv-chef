@@ -229,3 +229,5 @@ I'll indicate that with empty parens. You can leave those off too. Functions are
 * trim(?) - removes whitespace from the provided value
 * first_chars(num, ?) - returns the first `num` characters of a string
 * last_chars(num, ?) - returns the last `num` characters of a string
+* repeat(count, ?) - returns the input repeated `count` times, ex: `repeat(3, "apple")` is `appleappleapple`
+* 

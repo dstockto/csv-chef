@@ -137,6 +137,18 @@ func Trim(input string) (string, error) {
 	return strings.TrimSpace(input), nil
 }
 
+func Repeat(count string, input string) (string, error) {
+	num, err := strconv.Atoi(count)
+	if err != nil {
+		return "", fmt.Errorf("first arg is not an integer: got '%s'", count)
+	}
+	if num < 0 {
+		return "", fmt.Errorf("first arg is negative: got '%d'", num)
+	}
+
+	return strings.Repeat(input, num), nil
+}
+
 func FirstChars(count string, input string) (string, error) {
 	num, err := strconv.Atoi(count)
 	if err != nil {

@@ -509,6 +509,38 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			wantErr:     true,
 			wantErrText: "line 3 / column 1: lastchars(): first arg is negative: got '-2'",
 		},
+		{
+			name:   "repeat repeats a string some number of times",
+			recipe: "1 <- 1 -> repeat(\"2\")",
+			input:  "la\nboo\nfefi\n",
+			want:   "lala\nbooboo\nfefifefi\n",
+		},
+		{
+			name:   "repeat repeats a string some number of times with explicit 2nd arg",
+			recipe: "1 <- repeat(\"2\", 1)",
+			input:  "la\nboo\nfefi\n",
+			want:   "lala\nbooboo\nfefifefi\n",
+		},
+		{
+			name:   "silly repeat test",
+			recipe: "1 <- 1 -> repeat",
+			input:  "1\n2\n3\n4\n5\n",
+			want:   "1\n22\n333\n4444\n55555\n",
+		},
+		{
+			name:        "repeat has an error if first argument is not an integer",
+			recipe:      "1 <- repeat(\"abc\", \"foo\")",
+			input:       "a\n",
+			wantErr:     true,
+			wantErrText: "line 1 / column 1: repeat(): first arg is not an integer: got 'abc'",
+		},
+		{
+			name:        "repeat has an error if first argument is negative",
+			recipe:      "1 <- repeat(1)\n",
+			input:       "2\n4\n-4\n",
+			wantErr:     true,
+			wantErrText: "line 3 / column 1: repeat(): first arg is negative: got '-4'",
+		},
 	}
 
 	for _, tt := range tests {

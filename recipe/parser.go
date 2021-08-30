@@ -28,6 +28,7 @@ var allFuncs = map[string][]int{
 	"trim":           {1},
 	"firstchars":     {1},
 	"lastchars":      {1},
+	"repeat":         {2},
 	"today":          {0},
 	"fake":           {1},
 	"normalize_date": {1, 1},
