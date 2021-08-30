@@ -197,14 +197,18 @@ Finally, if the function takes a final parameter of `?` then you can leave it of
 automatically provide it. In fact, it will automatically provide the placeholder value for all arguments that you don't
 explicitly provide. This may not be what you want though and the output may not be correct or a function that expects
 certain input may result in an error. If a function does not need any parameters and won't use them if you provide them,
-I'll indicate that with empty parens. You can leave those off too.
+I'll indicate that with empty parens. You can leave those off too. Functions are case-insensitive when calling them, so you could use `Uppercase` or `uppercase` or even `UPPERCASE` in your recipes. In the docs below sometimes I'll use mixed case just to make the function naming easier to read.
 
 * uppercase(?) - transforms characters in the value to uppercase - ex uppercase("apple") is APPLE.
 * lowercase(?) - transforms characters in the value to lowercase - ex lowercase("LOWER") is lower.
+* join(?) - This function joins whatever has happened on the left (or in the parameter) with the rest of the recipe on the right. This function is automatically inserted whenever you use the `+` operator.
 * today() - returns today's date in YYYY-mm-dd format, ex 2021-08-23
 * add(?, ?) - accepts two values that should be numerical and returns a string representing the sum of those two values.
-  Providing non-numerical values will probably not do what you want. Remember, `add(2, 3)` is not 5, it's the sum of the
-  values in columns 2 and 3.
+  Providing non-numerical values will probably not do what you want. Remember, `add(2, 3)` is not 5, it's the sum of the values in columns 2 and 3.
+* addfloat(x, y, precision: int) - This function will add numbers that have decimals (like money). The precision value is how many numbers after the decimal to keep. If you provide -1 it will will not round or chop any decimals. If the inputs are non-numeric, an error will occur.
+* change(from, to, input) - If `from` is the same as `input` then the `to` value is returned. If it is not matching, then the original value is returned.
+* changei(from, to, input) - This works the same as change, but it is case-insensitive in regards to the the matching.
+* ifEmpty(emptyVal, notEmptyVal, input) - If input is empty then `emptyVal` is returned, otherwise the `notEmpty` value is returned. Since recipes fill in missing values with the placeholder (?) automatically, if you want non-empty values to be retained, you can simply put `notEmpty(emptyVal)` in your recipe and it will retain non-empty values unchanged.
 * subtract(?, ?) - returns the value of the first parameter minus the second. All the caveats that apply to add apply
   here.
 * multiply(?, ?) - returns the product of the two provided numerical values
@@ -215,10 +219,8 @@ I'll indicate that with empty parens. You can leave those off too.
 * format_date(format, date) - Use this at the end of a line of date operations to get a date in a format that you want.
 * if_after(after, not_after, date) - This function will return the `after` value if today is after the provided `date`,
   or the `not_after` value if today is before `date`.
-* if_same(same, not_same, x, y) - If `x` and `y` are the same, this function returns the `same` value. If they are not,
-  it returns the `not_same` value.
 * only_digits(?) - returns all digit characters from the provided value
-* not_digits(?) - strips all digit characters from the provided value
+* remove_digits(?) - strips all digit characters from the provided value
 * trim(?) - removes whitespace from the provided value
 * first_chars(num, ?) - returns the first `num` characters of a string
 * last_chars(num, ?) - returns the last `num` characters of a string
