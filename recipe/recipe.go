@@ -304,60 +304,60 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 		case "uppercase":
 			firstArg, err := o.Arguments[0].GetValue(context, placeholder)
 			if err != nil {
-				return "", fmt.Errorf("%s uppercase: error evaluating arg: %v", errorPrefix, err)
+				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
 			}
 			value = Uppercase(firstArg)
 		case "lowercase":
 			firstArg, err := o.Arguments[0].GetValue(context, placeholder)
 			if err != nil {
-				return "", fmt.Errorf("%s lowercase: error evaluating arg: %v", errorPrefix, err)
+				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
 			}
 			value = Lowercase(firstArg)
 		case "add":
 			args, err := processArgs(2, o.Arguments, context, placeholder)
 			if err != nil {
-				return "", fmt.Errorf("%s add() - error evaluating arg: %v", errorPrefix, err)
+				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
 			}
 			sum, err := Add(args[0], args[1])
 			if err != nil {
-				return "", fmt.Errorf("%s add() - %v", errorPrefix, err)
+				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
 			}
 			value = sum
 		case "subtract":
 			args, err := processArgs(2, o.Arguments, context, placeholder)
 			if err != nil {
-				return "", fmt.Errorf("%s subtract() - error evaluating arg: %v", errorPrefix, err)
+				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
 			}
 			difference, err := Subtract(args[0], args[1])
 			if err != nil {
-				return "", fmt.Errorf("%s subtract() - %v", errorPrefix, err)
+				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
 			}
 			value = difference
 		case "change":
 			args, err := processArgs(3, o.Arguments, context, placeholder)
 			if err != nil {
-				return "", fmt.Errorf("%s change() - error evaluating arg: %v", errorPrefix, err)
+				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
 			}
 			updated, _ := Change(args[0], args[1], args[2]) // no errors from this
 			value = updated
 		case "changei":
 			args, err := processArgs(3, o.Arguments, context, placeholder)
 			if err != nil {
-				return "", fmt.Errorf("%s changei() - error evaluating arg: %v", errorPrefix, err)
+				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
 			}
 			updated, _ := ChangeI(args[0], args[1], args[2]) // no errors from this
 			value = updated
 		case "ifempty":
 			args, err := processArgs(3, o.Arguments, context, placeholder)
 			if err != nil {
-				return "", fmt.Errorf("%s ifempty() - error evaluating arg: %v", errorPrefix, err)
+				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
 			}
 			result, _ := IfEmpty(args[0], args[1], args[2]) // no errors
 			value = result
 		case "numberformat":
 			args, err := processArgs(3, o.Arguments, context, placeholder)
 			if err != nil {
-				return "", fmt.Errorf("%s %s() - error evaluating arg: %v", errorPrefix, opName, err)
+				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
 			}
 			result, err := NumberFormat(args[0], args[1])
 			if err != nil {
