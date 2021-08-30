@@ -332,6 +332,16 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 				return "", fmt.Errorf("%s addfloat() - %v", errorPrefix, err)
 			}
 			value = sum
+		case "subtract":
+			args, err := processArgs(2, o.Arguments, context, placeholder)
+			if err != nil {
+				return "", fmt.Errorf("%s subtract() - error evaluating arg: %v", errorPrefix, err)
+			}
+			difference, err := Subtract(args[0], args[1])
+			if err != nil {
+				return "", fmt.Errorf("%s subtract() - %v", errorPrefix, err)
+			}
+			value = difference
 		case "change":
 			args, err := processArgs(3, o.Arguments, context, placeholder)
 			if err != nil {

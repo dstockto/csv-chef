@@ -318,6 +318,19 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			input:  ",lala\nA,a\nb,B\n",
 			want:   "empty\nA\nb\n",
 		},
+		{
+			name:   "test subtract",
+			recipe: "1 <- subtract(2,3)",
+			input:  "a,50,40\na,10,10\na,5,10\n",
+			want:   "10.000000\n0.000000\n-5.000000\n",
+		},
+		{
+			name:        "test subtract errors",
+			recipe:      "1 <- subtract($foo,1)",
+			input:       "1",
+			wantErr:     true,
+			wantErrText: "line 1 / column 1: subtract() - error evaluating arg: variable '$foo' referenced, but it is not defined",
+		},
 	}
 
 	for _, tt := range tests {

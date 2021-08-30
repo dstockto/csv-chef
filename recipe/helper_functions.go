@@ -76,6 +76,20 @@ func AddFloat(x string, y string, decimals string) (string, error) {
 	return fmt.Sprintf(format, sum), nil
 }
 
+func Subtract(x string, y string) (string, error) {
+	xnum, err := strconv.ParseFloat(x, 64)
+	if err != nil {
+		return "", fmt.Errorf("first arg to subtract was not numeric: %s", x)
+	}
+	ynum, err := strconv.ParseFloat(y, 64)
+	if err != nil {
+		return "", fmt.Errorf("second arg to subtract was not numeric: %s", y)
+	}
+
+	difference := xnum - ynum
+	return fmt.Sprintf("%f", difference), nil
+}
+
 func Change(from string, to string, input string) (string, error) {
 	if input == from {
 		return to, nil

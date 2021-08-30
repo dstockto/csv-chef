@@ -14,14 +14,15 @@ var allFuncs = map[string][]int{
 	"lowercase": {1},
 	"join":      {1},
 	"add":       {2},
+	"subtract":  {2},
 	"addfloat":  {3},
 	"change":    {3},
 	"changei":   {3},
 	"ifempty":   {3},
 
-	//"today":          {0},
-	//"fake":           {1},
-	//"normalize_date": {1, 1},
+	"today":          {0},
+	"fake":           {1},
+	"normalize_date": {1, 1},
 }
 
 func Parse(source io.Reader) (*Transformation, error) {

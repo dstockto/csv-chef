@@ -212,8 +212,8 @@ I'll indicate that with empty parens. You can leave those off too. Functions are
 * subtract(?, ?) - returns the value of the first parameter minus the second. All the caveats that apply to add apply
   here.
 * multiply(?, ?) - returns the product of the two provided numerical values
-* divide(?, ?) - provides the result of first value divided by the second. They should of course be numbers and the
-  second value should not be zero unless you want to cause damage to the space-time continuum.
+* divide(?, ?) - provides the result of first value divided by the second. They should of course be numbers and the second value should not be zero unless you want to cause damage to the space-time continuum.
+* number_format(digits, ?) - run this after add, subtract, multiply or divide to trim decimals. The digits parameter is how many digits after the decimal you want to keep 
 * normalize_date(format, date) - This function can accept a date in the provided `format` and return a string of that
   date in a format that other functions that need dates can utilize.
 * format_date(format, date) - Use this at the end of a line of date operations to get a date in a format that you want.
