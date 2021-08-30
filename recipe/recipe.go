@@ -361,7 +361,7 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 			}
 			result, err := NumberFormat(args[0], args[1])
 			if err != nil {
-				return "", fmt.Errorf("%s %s() - %v", errorPrefix, opName, err)
+				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
 			}
 			value = result
 			// TODO make function calling more smart, using the allFuncs thing
