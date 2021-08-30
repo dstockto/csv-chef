@@ -142,15 +142,36 @@ func FirstChars(count string, input string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("first arg is not an integer: got '%s'", count)
 	}
-	if num < 1 {
-		return "", fmt.Errorf("first arg is not a positive integer: got '%s'", count)
+	if num < 0 {
+		return "", fmt.Errorf("first arg is negative: got '%s'", count)
 	}
 
-	if num > len(input) {
+	r := []rune(input)
+
+	if num > len(r) {
 		return input, nil
 	}
 
-	return input[:num], nil
+	return string(r[:num]), nil
+}
+
+func LastChars(count string, input string) (string, error) {
+	num, err := strconv.Atoi(count)
+	if err != nil {
+		return "", fmt.Errorf("first arg is not an integer: got '%s'", count)
+	}
+	if num < 0 {
+		return "", fmt.Errorf("first arg is negative: got '%s'", count)
+	}
+
+	r := []rune(input)
+
+	runeCount := len(r)
+	if num > runeCount {
+		return input, nil
+	}
+
+	return string(r[runeCount-num:]), nil
 }
 
 func RemoveDigits(input string) (string, error) {

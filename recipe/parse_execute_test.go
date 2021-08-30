@@ -454,14 +454,14 @@ func TestTransformation_ParseExecute(t *testing.T) {
 		{
 			name:   "firstChars returns the first X characters of the input",
 			recipe: "1 <- firstChars(\"3\", 1)\n",
-			input:  "apple\nbanana\npear\nab\n",
-			want:   "app\nban\npea\nab\n",
+			input:  "apple\nbanana\npear\nab\n世界世界世界\n世界\n",
+			want:   "app\nban\npea\nab\n世界世\n世界\n",
 		},
 		{
 			name:   "firstChars returns the first X characters of the input using implicit placeholder",
 			recipe: "1 <- 1 -> firstChars(\"3\")\n",
-			input:  "apple\nbanana\npear\n",
-			want:   "app\nban\npea\n",
+			input:  "apple\nbanana\npear\n世界世界世界\n",
+			want:   "app\nban\npea\n世界世\n",
 		},
 		{
 			name:        "firstChars with non-int first parameter is an error",
@@ -475,7 +475,39 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			recipe:      "1 <- 1 -> firstChars(\"-2\")\n",
 			input:       "apple\nbanana\npear\n",
 			wantErr:     true,
-			wantErrText: "line 1 / column 1: firstchars(): first arg is not a positive integer: got '-2'",
+			wantErrText: "line 1 / column 1: firstchars(): first arg is negative: got '-2'",
+		},
+		{
+			name:   "lastChars returns the last N characters of input",
+			recipe: "1 <- 1 -> lastChars(\"3\")\n",
+			input:  "scan\nscat\nfrat\nhalifax\n世界世界世界\n",
+			want:   "can\ncat\nrat\nfax\n界世界\n",
+		},
+		{
+			name:   "lastChars returns the whole input if N is larger than input size",
+			recipe: "1 <- 1 -> lastChars(\"4\")\n",
+			input:  "pan\nban\nman\n界世界\n",
+			want:   "pan\nban\nman\n界世界\n",
+		},
+		{
+			name:   "lastChars with dynamic size",
+			recipe: "1 <- lastChars(1, 2)",
+			input:  "4,scowl\n5,pineapple\n3,slap\n",
+			want:   "cowl\napple\nlap\n",
+		},
+		{
+			name:        "lastChars returns error if count param is non-int",
+			recipe:      "1 <- lastChars(1, 2)",
+			input:       "4,scowl\n5,pineapple\nfireball,larp\n",
+			wantErr:     true,
+			wantErrText: "line 3 / column 1: lastchars(): first arg is not an integer: got 'fireball'",
+		},
+		{
+			name:        "lastChars returns error if count param is negative",
+			recipe:      "1 <- lastChars(1, 2)",
+			input:       "4,scowl\n5,pineapple\n-2,larp\n",
+			wantErr:     true,
+			wantErrText: "line 3 / column 1: lastchars(): first arg is negative: got '-2'",
 		},
 	}
 
