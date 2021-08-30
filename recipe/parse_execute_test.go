@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestTransformation_ParseExecute(t *testing.T) {
@@ -547,6 +548,12 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			input:  "abla\nabde\nabop\nsalad\nabca-abla\n",
 			want:   "Cola\nCode\nCoop\nsalad\nCoca-Cola\n",
 		},
+		{
+			name:   "today returns today's date in Y-m-d format",
+			recipe: "1 <- 1\n2 <- today",
+			input:  "a\nb\n",
+			want:   "a,2021-08-30\nb,2021-08-30\n",
+		},
 	}
 
 	for _, tt := range tests {
@@ -563,6 +570,12 @@ func TestTransformation_ParseExecute(t *testing.T) {
 
 			var b bytes.Buffer
 			writer := csv.NewWriter(&b)
+
+			// Provide fixed implementation of Now so time test can work
+			Now = func() time.Time {
+				loc, _ := time.LoadLocation("America/Denver")
+				return time.Date(2021, 8, 30, 0, 0, 0, 0, loc)
+			}
 
 			err = transformation.Execute(csv.NewReader(strings.NewReader(tt.input)), writer, tt.processHeader)
 			if (err != nil) != tt.wantErr {

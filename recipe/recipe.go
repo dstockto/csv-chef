@@ -454,6 +454,9 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 			}
 			result, _ := ReplaceString(args[0], args[1], args[2]) // no errors from this
 			value = result
+		case "today":
+			value, _ = Today(Now)
+
 		// TODO make function calling more smart, using the allFuncs thing
 		default:
 			return "", fmt.Errorf("%s error: processing variable, unimplemented operation %s", errorPrefix, o.Name)

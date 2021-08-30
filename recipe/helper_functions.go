@@ -7,9 +7,12 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Processor func(string) string
+
+var Now = time.Now
 
 func Lowercase(s string) string {
 	return strings.ToLower(s)
@@ -151,6 +154,10 @@ func Repeat(count string, input string) (string, error) {
 
 func ReplaceString(search string, replace string, input string) (string, error) {
 	return strings.Replace(input, search, replace, -1), nil
+}
+
+func Today(now func() time.Time) (string, error) {
+	return now().Format("2006-01-02"), nil
 }
 
 func FirstChars(count string, input string) (string, error) {
