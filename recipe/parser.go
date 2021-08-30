@@ -32,6 +32,7 @@ var allFuncs = map[string][]int{
 	"replace":      {3},
 	"today":        {0},
 	"now":          {0},
+	"formatdate":   {2},
 
 	"normalize_date": {1, 1},
 	"fake":           {1},

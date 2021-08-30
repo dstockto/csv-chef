@@ -458,6 +458,16 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 			value, _ = Today(Now)
 		case "now":
 			value, _ = NowTime(Now)
+		case "formatdate":
+			args, err := processArgs(2, o.Arguments, context, placeholder)
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
+			}
+			result, err := FormatDate(args[0], args[1])
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
+			}
+			value = result
 
 		// TODO make function calling more smart, using the allFuncs thing
 		default:

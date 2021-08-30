@@ -160,6 +160,14 @@ func Today(now func() time.Time) (string, error) {
 	return now().Format("2006-01-02"), nil
 }
 
+func FormatDate(format string, normalDate string) (string, error) {
+	timestamp, err := time.Parse(time.RFC3339, normalDate)
+	if err != nil {
+		return "", fmt.Errorf("formatdate(), unable to read provided datetime: %v", err)
+	}
+	return timestamp.Format(format), nil
+}
+
 func NowTime(now func() time.Time) (string, error) {
 	return now().Format(time.RFC3339), nil
 }

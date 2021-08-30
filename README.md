@@ -223,7 +223,7 @@ I'll indicate that with empty parens. You can leave those off too. Functions are
 * onlyDigits(?) - strips all characters except digits from the provided value
 * normalize_date(format, date) - This function can accept a date in the provided `format` and return a string of that
   date in a format that other functions that need dates can utilize.
-* format_date(format, date) - Use this at the end of a line of date operations to get a date in a format that you want.
+* formatDate(format, date) - Use this at the end of a line of date operations to get a date in a format that you want. Formatting is go style based on "Mon Jan 01, 2006 15:04:05-0700". It can recognize Monday or January if you want it spelled out, and 03 for 12 hour time, as well as PM or pm if you want that included. The timezone is MST on that day, so MST will spell out the timezone, or America/Denver for the fully spelled out timezone. Incoming date should be normalized to RFC 3339 format first.
 * if_after(after, not_after, date) - This function will return the `after` value if today is after the provided `date`,
   or the `not_after` value if today is before `date`.
 * only_digits(?) - returns all digit characters from the provided value
