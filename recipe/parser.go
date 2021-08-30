@@ -30,8 +30,9 @@ var allFuncs = map[string][]int{
 	"lastchars":    {1},
 	"repeat":       {2},
 	"replace":      {3},
+	"today":        {0},
+	"now":          {0},
 
-	"today":          {0},
 	"normalize_date": {1, 1},
 	"fake":           {1},
 }

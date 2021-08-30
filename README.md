@@ -203,6 +203,7 @@ I'll indicate that with empty parens. You can leave those off too. Functions are
 * lowercase(?) - transforms characters in the value to lowercase - ex lowercase("LOWER") is lower.
 * join(?) - This function joins whatever has happened on the left (or in the parameter) with the rest of the recipe on the right. This function is automatically inserted whenever you use the `+` operator.
 * today() - returns today's date in YYYY-mm-dd format, ex 2021-08-30
+* now() - returns the current date and time in RFC-3339 format, ex: `2021-08-30T18:22:13-06:00` 
 * add(?, ?) - accepts two values that should be numerical and returns a string representing the sum of those two values.
   Providing non-numerical values will probably not do what you want. Remember, `add(2, 3)` is not 5, it's the sum of the values in columns 2 and 3.
 * change(from, to, input) - If `from` is the same as `input` then the `to` value is returned. If it is not matching, then the original value is returned.

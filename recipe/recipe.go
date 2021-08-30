@@ -456,6 +456,8 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 			value = result
 		case "today":
 			value, _ = Today(Now)
+		case "now":
+			value, _ = NowTime(Now)
 
 		// TODO make function calling more smart, using the allFuncs thing
 		default:

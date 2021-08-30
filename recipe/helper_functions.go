@@ -160,6 +160,10 @@ func Today(now func() time.Time) (string, error) {
 	return now().Format("2006-01-02"), nil
 }
 
+func NowTime(now func() time.Time) (string, error) {
+	return now().Format(time.RFC3339), nil
+}
+
 func FirstChars(count string, input string) (string, error) {
 	num, err := strconv.Atoi(count)
 	if err != nil {
