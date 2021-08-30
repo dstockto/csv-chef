@@ -149,6 +149,10 @@ func Repeat(count string, input string) (string, error) {
 	return strings.Repeat(input, num), nil
 }
 
+func ReplaceString(search string, replace string, input string) (string, error) {
+	return strings.Replace(input, search, replace, -1), nil
+}
+
 func FirstChars(count string, input string) (string, error) {
 	num, err := strconv.Atoi(count)
 	if err != nil {

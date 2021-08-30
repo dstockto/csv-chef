@@ -541,6 +541,12 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			wantErr:     true,
 			wantErrText: "line 3 / column 1: repeat(): first arg is negative: got '-4'",
 		},
+		{
+			name:   "replace will turn found search to something else in the input",
+			recipe: "1 <- 1 -> replace(\"ab\",\"Co\")",
+			input:  "abla\nabde\nabop\nsalad\nabca-abla\n",
+			want:   "Cola\nCode\nCoop\nsalad\nCoca-Cola\n",
+		},
 	}
 
 	for _, tt := range tests {

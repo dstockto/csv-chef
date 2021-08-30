@@ -230,4 +230,5 @@ I'll indicate that with empty parens. You can leave those off too. Functions are
 * first_chars(num, ?) - returns the first `num` characters of a string
 * last_chars(num, ?) - returns the last `num` characters of a string
 * repeat(count, ?) - returns the input repeated `count` times, ex: `repeat(3, "apple")` is `appleappleapple`
-* 
+* replace(search, replace, ?) - If the `search` string is found within the input, it will be replaced with the `replace` string. If it's not found, the original input is returned unchanged.
+
