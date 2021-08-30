@@ -214,13 +214,13 @@ I'll indicate that with empty parens. You can leave those off too. Functions are
 * divide(?, ?) - provides the result of first value divided by the second. They should of course be numbers and the second value should not be zero unless you want to cause damage to the space-time continuum.
 * numberFormat(digits, ?) - run this after add, subtract, multiply or divide to trim decimals. The `digits` parameter is how many digits after the decimal you want to keep.
 * lineno() - this function returns the current line number
+* removeDigits(?) - strips all digit characters from the provided value
 * normalize_date(format, date) - This function can accept a date in the provided `format` and return a string of that
   date in a format that other functions that need dates can utilize.
 * format_date(format, date) - Use this at the end of a line of date operations to get a date in a format that you want.
 * if_after(after, not_after, date) - This function will return the `after` value if today is after the provided `date`,
   or the `not_after` value if today is before `date`.
 * only_digits(?) - returns all digit characters from the provided value
-* remove_digits(?) - strips all digit characters from the provided value
 * trim(?) - removes whitespace from the provided value
 * first_chars(num, ?) - returns the first `num` characters of a string
 * last_chars(num, ?) - returns the last `num` characters of a string

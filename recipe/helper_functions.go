@@ -115,6 +115,11 @@ func NumberFormat(digits string, input string) (string, error) {
 	return fmt.Sprintf(format, inputNum), nil
 }
 
+func RemoveDigits(input string) (string, error) {
+	reg := regexp.MustCompile("[0-9]+")
+	return reg.ReplaceAllString(input, ""), nil
+}
+
 func Change(from string, to string, input string) (string, error) {
 	if input == from {
 		return to, nil

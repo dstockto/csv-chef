@@ -401,6 +401,19 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			input:  "a\nb\nc\nd\n",
 			want:   "1,a\n2,b\n3,c\n4,d\n",
 		},
+		{
+			name:   "removeDigits removes any digits in an input",
+			recipe: "1<-1->removeDigits\n",
+			input:  "alpha,\n12345,\na1b2c3,\n",
+			want:   "alpha\n\nabc\n",
+		},
+		{
+			name:        "bad reference in removeDigits is an error",
+			recipe:      "1<-removeDigits(32)\n",
+			input:       "alpha,\n12345,\na1b2c3\n",
+			wantErr:     true,
+			wantErrText: "line 1 / column 1: removedigits(): error evaluating arg: column 32 referenced, but it does not exist in the input",
+		},
 	}
 
 	for _, tt := range tests {
