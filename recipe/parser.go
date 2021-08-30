@@ -15,7 +15,6 @@ var allFuncs = map[string][]int{
 	"join":      {1},
 	"add":       {2},
 	"subtract":  {2},
-	"addfloat":  {3},
 	"change":    {3},
 	"changei":   {3},
 	"ifempty":   {3},

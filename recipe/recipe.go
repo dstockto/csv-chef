@@ -303,33 +303,23 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 		case "uppercase":
 			firstArg, err := o.Arguments[0].GetValue(context, placeholder)
 			if err != nil {
-				return "", fmt.Errorf("%s uppercase: error evaluating arg - %v", errorPrefix, err)
+				return "", fmt.Errorf("%s uppercase: error evaluating arg: %v", errorPrefix, err)
 			}
 			value = Uppercase(firstArg)
 		case "lowercase":
 			firstArg, err := o.Arguments[0].GetValue(context, placeholder)
 			if err != nil {
-				return "", fmt.Errorf("%s lowercase: error evaluating arg - %v", errorPrefix, err)
+				return "", fmt.Errorf("%s lowercase: error evaluating arg: %v", errorPrefix, err)
 			}
 			value = Lowercase(firstArg)
 		case "add":
 			args, err := processArgs(2, o.Arguments, context, placeholder)
 			if err != nil {
-				return "", fmt.Errorf("%s add() error evaluating arg - %v", errorPrefix, err)
+				return "", fmt.Errorf("%s add() - error evaluating arg: %v", errorPrefix, err)
 			}
 			sum, err := Add(args[0], args[1])
 			if err != nil {
 				return "", fmt.Errorf("%s add() - %v", errorPrefix, err)
-			}
-			value = sum
-		case "addfloat":
-			args, err := processArgs(3, o.Arguments, context, placeholder)
-			if err != nil {
-				return "", fmt.Errorf("%s addfloat() - error evaluating arg: %v", errorPrefix, err)
-			}
-			sum, err := AddFloat(args[0], args[1], args[2])
-			if err != nil {
-				return "", fmt.Errorf("%s addfloat() - %v", errorPrefix, err)
 			}
 			value = sum
 		case "subtract":

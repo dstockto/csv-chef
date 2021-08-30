@@ -38,42 +38,18 @@ func JoinFunc(p string) Processor {
 }
 
 func Add(x string, y string) (string, error) {
-	xnum, err := strconv.Atoi(x)
-	if err != nil {
-		return "", fmt.Errorf("first arg to Add was not an integer: %s", x)
-	}
-	ynum, err := strconv.Atoi(y)
-	if err != nil {
-		return "", fmt.Errorf("second arg to Add was not an integer: %s", y)
-	}
-
-	sum := xnum + ynum
-
-	return strconv.Itoa(sum), nil
-}
-
-func AddFloat(x string, y string, decimals string) (string, error) {
 	xnum, err := strconv.ParseFloat(x, 64)
 	if err != nil {
-		return "", fmt.Errorf("first arg to AddFloat was not numeric: %s", x)
+		return "", fmt.Errorf("first arg to Add was not numeric: %s", x)
 	}
 	ynum, err := strconv.ParseFloat(y, 64)
 	if err != nil {
-		return "", fmt.Errorf("second arg to AddFloat was not numeric: %s", y)
-	}
-	precision, err := strconv.Atoi(decimals)
-	if err != nil {
-		return "", fmt.Errorf("AddFloat precision should be an integer for number of decimals, or -1 for all, found %s", decimals)
-	}
-
-	format := "%f"
-	if precision != -1 {
-		format = fmt.Sprintf("%%.%df", precision)
+		return "", fmt.Errorf("second arg to Add was not numeric: %s", y)
 	}
 
 	sum := xnum + ynum
 
-	return fmt.Sprintf(format, sum), nil
+	return fmt.Sprintf("%f", sum), nil
 }
 
 func Subtract(x string, y string) (string, error) {

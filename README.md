@@ -205,7 +205,6 @@ I'll indicate that with empty parens. You can leave those off too. Functions are
 * today() - returns today's date in YYYY-mm-dd format, ex 2021-08-23
 * add(?, ?) - accepts two values that should be numerical and returns a string representing the sum of those two values.
   Providing non-numerical values will probably not do what you want. Remember, `add(2, 3)` is not 5, it's the sum of the values in columns 2 and 3.
-* addfloat(x, y, precision: int) - This function will add numbers that have decimals (like money). The precision value is how many numbers after the decimal to keep. If you provide -1 it will will not round or chop any decimals. If the inputs are non-numeric, an error will occur.
 * change(from, to, input) - If `from` is the same as `input` then the `to` value is returned. If it is not matching, then the original value is returned.
 * changei(from, to, input) - This works the same as change, but it is case-insensitive in regards to the the matching.
 * ifEmpty(emptyVal, notEmptyVal, input) - If input is empty then `emptyVal` is returned, otherwise the `notEmpty` value is returned. Since recipes fill in missing values with the placeholder (?) automatically, if you want non-empty values to be retained, you can simply put `notEmpty(emptyVal)` in your recipe and it will retain non-empty values unchanged.
