@@ -21,6 +21,7 @@ var allFuncs = map[string][]int{
 	"changei":      {3},
 	"ifempty":      {3},
 	"numberformat": {2},
+	"lineno":       {0},
 
 	"today":          {0},
 	"fake":           {1},

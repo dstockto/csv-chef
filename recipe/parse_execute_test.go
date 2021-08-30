@@ -395,6 +395,12 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			wantErr:     true,
 			wantErrText: "line 1 / column 1: divide(): error: attempt to divide by zero",
 		},
+		{
+			name:   "lineno returns the current line number",
+			recipe: "1<-lineno\n2<-1",
+			input:  "a\nb\nc\nd\n",
+			want:   "1,a\n2,b\n3,c\n4,d\n",
+		},
 	}
 
 	for _, tt := range tests {

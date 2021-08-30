@@ -384,6 +384,8 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
 			}
 			value = result
+		case "lineno":
+			value = strconv.Itoa(context.LineNo)
 			// TODO make function calling more smart, using the allFuncs thing
 		default:
 			return "", fmt.Errorf("%s error: processing variable, unimplemented operation %s", errorPrefix, o.Name)
