@@ -83,6 +83,20 @@ func Change(from string, to string, input string) (string, error) {
 	return input, nil
 }
 
+func ChangeI(from string, to string, input string) (string, error) {
+	if strings.ToLower(input) == strings.ToLower(from) {
+		return to, nil
+	}
+	return input, nil
+}
+
+func IfEmpty(emptyVal string, notEmptyVal string, input string) (string, error) {
+	if input == "" {
+		return emptyVal, nil
+	}
+	return notEmptyVal, nil
+}
+
 func MassProcess(incoming []string, processor Processor) (out []string) {
 	for _, s := range incoming {
 		out = append(out, processor(s))

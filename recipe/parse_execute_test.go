@@ -272,17 +272,45 @@ func TestTransformation_ParseExecute(t *testing.T) {
 		{
 			name:          "chain of change calls",
 			recipe:        "1 <- 1 -> change(\"acc\", \"accepted\") -> change(\"rej\", \"rejected\") -> change(\"mailed\", \"outbound\") -> uppercase",
-			input:         "status\nacc\nrej\nmailed\n",
+			input:         "status\nacc\nrej\nmailed\nextra\n",
 			processHeader: true,
-			want:          "status\nACCEPTED\nREJECTED\nOUTBOUND\n",
+			want:          "status\nACCEPTED\nREJECTED\nOUTBOUND\nEXTRA\n",
 		},
 		{
-			name:          "chain call with bad reference is an error",
+			name:          "change call with bad reference is an error",
 			recipe:        "1 <- 1 -> change(\"foo\", $foo)",
 			input:         "a,b\n",
 			processHeader: false,
 			wantErr:       true,
 			wantErrText:   "line 1 / column 1: change() - error evaluating arg: variable '$foo' referenced, but it is not defined",
+		},
+		{
+			name:          "chain of changeI calls",
+			recipe:        "1 <- 1 -> changei(\"acc\", \"accepted\") -> changei(\"rej\", \"rejected\") -> changei(\"mailed\", \"outbound\") -> uppercase",
+			input:         "Status\naCc\nREJ\nmAiled\nunmapped\n",
+			processHeader: true,
+			want:          "Status\nACCEPTED\nREJECTED\nOUTBOUND\nUNMAPPED\n",
+		},
+		{
+			name:        "changeI call with bad reference is an error",
+			recipe:      "1 <- 1 -> changei(\"foo\", $foo)",
+			input:       "a,b\n",
+			wantErr:     true,
+			wantErrText: "line 1 / column 1: changei() - error evaluating arg: variable '$foo' referenced, but it is not defined",
+		},
+		{
+			name:    "ifempty test",
+			recipe:  "1 <- 1 -> ifempty(\"EMPTY\", \"NOT\")\n2 <- 2 -> ifempty(3, \"!!\")\n",
+			input:   ",,hi\na,,hi\n,b,hi\n",
+			wantErr: false,
+			want:    "EMPTY,hi\nNOT,hi\nEMPTY,!!\n",
+		},
+		{
+			name:        "ifempty test with reference error",
+			recipe:      "1 <- ifempty(\"EMPTY\", \"NOT\", $bar)\n",
+			input:       ",,hi\na,,hi\n,b,hi\n",
+			wantErr:     true,
+			wantErrText: "line 1 / column 1: ifempty() - error evaluating arg: variable '$bar' referenced, but it is not defined",
 		},
 	}
 

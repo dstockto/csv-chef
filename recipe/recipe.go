@@ -339,6 +339,20 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 			}
 			updated, _ := Change(args[0], args[1], args[2]) // no errors from this
 			value = updated
+		case "changei":
+			args, err := processArgs(3, o.Arguments, context, placeholder)
+			if err != nil {
+				return "", fmt.Errorf("%s changei() - error evaluating arg: %v", errorPrefix, err)
+			}
+			updated, _ := ChangeI(args[0], args[1], args[2]) // no errors from this
+			value = updated
+		case "ifempty":
+			args, err := processArgs(3, o.Arguments, context, placeholder)
+			if err != nil {
+				return "", fmt.Errorf("%s ifempty() - error evaluating arg: %v", errorPrefix, err)
+			}
+			result, _ := IfEmpty(args[0], args[1], args[2]) // no errors
+			value = result
 			// TODO make function calling more smart, using the allFuncs thing
 		default:
 			return "", fmt.Errorf("%s error: processing variable, unimplemented operation %s", errorPrefix, o.Name)

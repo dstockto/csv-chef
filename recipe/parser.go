@@ -16,6 +16,8 @@ var allFuncs = map[string][]int{
 	"add":            {2},
 	"addfloat":       {3},
 	"change":         {3},
+	"changei":        {3},
+	"ifempty":        {3},
 	"today":          {0},
 	"fake":           {1},
 	"normalize_date": {1, 1},
