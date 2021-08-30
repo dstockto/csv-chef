@@ -23,6 +23,7 @@ var allFuncs = map[string][]int{
 	"numberformat": {2},
 	"lineno":       {0},
 	"removedigits": {1},
+	"onlydigits":   {1},
 
 	"today":          {0},
 	"fake":           {1},

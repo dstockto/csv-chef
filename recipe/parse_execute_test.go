@@ -414,6 +414,19 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			wantErr:     true,
 			wantErrText: "line 1 / column 1: removedigits(): error evaluating arg: column 32 referenced, but it does not exist in the input",
 		},
+		{
+			name:   "onlyDigits leaves just the digits in an input",
+			recipe: "1<-1->onlyDigits\n",
+			input:  "alpha,\n12345,\na1b2c3,\n",
+			want:   "\n12345\n123\n",
+		},
+		{
+			name:        "bad reference in onlyDigits is an error",
+			recipe:      "1<-onlyDigits(16)\n",
+			input:       "alpha,\n12345,\na1b2c3\n",
+			wantErr:     true,
+			wantErrText: "line 1 / column 1: onlydigits(): error evaluating arg: column 16 referenced, but it does not exist in the input",
+		},
 	}
 
 	for _, tt := range tests {

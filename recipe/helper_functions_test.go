@@ -133,25 +133,3 @@ func TestNoDigits(t *testing.T) {
 		})
 	}
 }
-
-func TestOnlyDigits(t *testing.T) {
-	type args struct {
-		s string
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
-	}{
-		{name: "no digits", args: args{"bozo"}, want: ""},
-		{name: "numbers", args: args{"1234"}, want: "1234"},
-		{name: "mixed", args: args{"a1b2c3"}, want: "123"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := OnlyDigits(tt.args.s); got != tt.want {
-				t.Errorf("Lowercase() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}

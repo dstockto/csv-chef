@@ -27,11 +27,6 @@ func NoDigits(s string) string {
 	return reg.ReplaceAllString(s, "")
 }
 
-func OnlyDigits(s string) string {
-	reg := regexp.MustCompile("[^0-9]+")
-	return reg.ReplaceAllString(s, "")
-}
-
 func JoinFunc(p string) Processor {
 	return func(s string) string {
 		return p + s
@@ -113,6 +108,11 @@ func NumberFormat(digits string, input string) (string, error) {
 	format := fmt.Sprintf("%%.%df", digitsNum)
 
 	return fmt.Sprintf(format, inputNum), nil
+}
+
+func OnlyDigits(input string) (string, error) {
+	reg := regexp.MustCompile("[^0-9]+")
+	return reg.ReplaceAllString(input, ""), nil
 }
 
 func RemoveDigits(input string) (string, error) {
