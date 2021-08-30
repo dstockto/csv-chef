@@ -115,6 +115,24 @@ func OnlyDigits(input string) (string, error) {
 	return reg.ReplaceAllString(input, ""), nil
 }
 
+func Modulus(x string, y string) (string, error) {
+	xNum, err := strconv.Atoi(x)
+	if err != nil {
+		return "", fmt.Errorf("first arg to mod was not an integer: '%s'", x)
+	}
+	yNum, err := strconv.Atoi(y)
+	if err != nil {
+		return "", fmt.Errorf("second arg to mod was not an integer: '%s'", y)
+	}
+	if yNum == 0 {
+		return "", errors.New("attempt to divide by zero")
+	}
+
+	remainder := xNum % yNum
+
+	return fmt.Sprintf("%d", remainder), nil
+}
+
 func RemoveDigits(input string) (string, error) {
 	reg := regexp.MustCompile("[0-9]+")
 	return reg.ReplaceAllString(input, ""), nil

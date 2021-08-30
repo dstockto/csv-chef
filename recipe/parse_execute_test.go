@@ -427,6 +427,33 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			wantErr:     true,
 			wantErrText: "line 1 / column 1: onlydigits(): error evaluating arg: column 16 referenced, but it does not exist in the input",
 		},
+		{
+			name:   "mod function returns the remainder of dividing two ints",
+			recipe: "1 <- mod(1,2)",
+			input:  "0,2\n1,2\n2,2\n6,10\n",
+			want:   "0\n1\n0\n6\n",
+		},
+		{
+			name:        "mod function returns error if first arg is not int",
+			recipe:      "1 <- mod(1, 2)",
+			input:       "0,2\n3,4\napple,4\n5,10\n",
+			wantErr:     true,
+			wantErrText: "line 3 / column 1: mod(): first arg to mod was not an integer: 'apple'",
+		},
+		{
+			name:        "mod function returns error if second arg is not int",
+			recipe:      "1 <- mod(1, 2)",
+			input:       "0,2\n3,4\n1,4\n5,banana\n",
+			wantErr:     true,
+			wantErrText: "line 4 / column 1: mod(): second arg to mod was not an integer: 'banana'",
+		},
+		{
+			name:        "mod returns an error if divisor is zero",
+			recipe:      "1 <- mod(1, 2)",
+			input:       "0,2\n3,4\n2,0\n5,10\n",
+			wantErr:     true,
+			wantErrText: "line 3 / column 1: mod(): attempt to divide by zero",
+		},
 	}
 
 	for _, tt := range tests {
