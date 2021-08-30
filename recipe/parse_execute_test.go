@@ -312,6 +312,12 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			wantErr:     true,
 			wantErrText: "line 1 / column 1: ifempty() - error evaluating arg: variable '$bar' referenced, but it is not defined",
 		},
+		{
+			name:   "ifempty used to leave value alone",
+			recipe: "1 <- 1 -> ifempty(\"empty\")",
+			input:  ",lala\nA,a\nb,B\n",
+			want:   "empty\nA\nb\n",
+		},
 	}
 
 	for _, tt := range tests {
