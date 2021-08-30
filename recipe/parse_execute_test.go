@@ -454,6 +454,12 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			wantErr:     true,
 			wantErrText: "line 3 / column 1: mod(): attempt to divide by zero",
 		},
+		{
+			name:   "trim removes leading and trailing whitespace",
+			recipe: "1 <- trim(1)\n2 <- 2 -> trim\n",
+			input:  " apple , banana   \nartichoke  ,  kumquat\n   salad greens,squash the beef   \n",
+			want:   "apple,banana\nartichoke,kumquat\nsalad greens,squash the beef\n",
+		},
 	}
 
 	for _, tt := range tests {

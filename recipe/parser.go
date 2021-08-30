@@ -25,6 +25,7 @@ var allFuncs = map[string][]int{
 	"removedigits": {1},
 	"onlydigits":   {1},
 	"mod":          {2},
+	"trim":         {1},
 
 	"today":          {0},
 	"fake":           {1},

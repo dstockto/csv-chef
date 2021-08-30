@@ -133,6 +133,10 @@ func Modulus(x string, y string) (string, error) {
 	return fmt.Sprintf("%d", remainder), nil
 }
 
+func Trim(input string) (string, error) {
+	return strings.TrimSpace(input), nil
+}
+
 func RemoveDigits(input string) (string, error) {
 	reg := regexp.MustCompile("[0-9]+")
 	return reg.ReplaceAllString(input, ""), nil
