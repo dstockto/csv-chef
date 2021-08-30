@@ -210,7 +210,7 @@ I'll indicate that with empty parens. You can leave those off too. Functions are
 * ifEmpty(emptyVal, notEmptyVal, input) - If input is empty then `emptyVal` is returned, otherwise the `notEmpty` value is returned. Since recipes fill in missing values with the placeholder (?) automatically, if you want non-empty values to be retained, you can simply put `notEmpty(emptyVal)` in your recipe and it will retain non-empty values unchanged.
 * subtract(?, ?) - returns the value of the first parameter minus the second. All the caveats that apply to add apply
   here.
-* multiply(?, ?) - returns the product of the two provided numerical values
+* multiply(?, ?) - returns the product of the two provided numerical values. If either are not numerical, an error will occur.
 * divide(?, ?) - provides the result of first value divided by the second. They should of course be numbers and the second value should not be zero unless you want to cause damage to the space-time continuum.
 * numberFormat(digits, ?) - run this after add, subtract, multiply or divide to trim decimals. The `digits` parameter is how many digits after the decimal you want to keep.
 * normalize_date(format, date) - This function can accept a date in the provided `format` and return a string of that

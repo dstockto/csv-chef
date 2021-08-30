@@ -333,14 +333,34 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			recipe:      "1 <- 1->numberFormat(\"2\")",
 			input:       "2.3\nalpha\n",
 			wantErr:     true,
-			wantErrText: "line 2 / column 1: numberformat() - error: input is not numeric: got 'alpha'",
+			wantErrText: "line 2 / column 1: numberformat(): error: input is not numeric: got 'alpha'",
 		},
 		{
 			name:        "numberFormat will error if digits parameter is not a whole number numeric",
 			recipe:      "1 <- 1 -> numberFormat(2)",
 			input:       "2.3,beta",
 			wantErr:     true,
-			wantErrText: "line 1 / column 1: numberformat() - error: digits must be an integer, got 'beta'",
+			wantErrText: "line 1 / column 1: numberformat(): error: digits must be an integer, got 'beta'",
+		},
+		{
+			name:   "multiply returns the product of two numeric inputs",
+			recipe: "1 <- multiply(1,2)\n",
+			input:  "12,12\n4.5,3.0\n",
+			want:   "144.000000\n13.500000\n",
+		},
+		{
+			name:        "multiply return error if first arg is not numeric",
+			recipe:      "1 <- multiply(\"abc\", 2)\n",
+			input:       "12,12\n4.5,3.0\n",
+			wantErr:     true,
+			wantErrText: "line 1 / column 1: multiply(): error: first arg to multiply was not numeric, got 'abc'",
+		},
+		{
+			name:        "multiply return error if second arg is not numeric",
+			recipe:      "1 <- multiply(1, 2)\n",
+			input:       "12,12\n4.5,def\n",
+			wantErr:     true,
+			wantErrText: "line 2 / column 1: multiply(): error: second arg to multiply was not numeric, got 'def'",
 		},
 	}
 

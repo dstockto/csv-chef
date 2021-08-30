@@ -333,6 +333,16 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
 			}
 			value = difference
+		case "multiply":
+			args, err := processArgs(2, o.Arguments, context, placeholder)
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
+			}
+			product, err := Multiply(args[0], args[1])
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
+			}
+			value = product
 		case "change":
 			args, err := processArgs(3, o.Arguments, context, placeholder)
 			if err != nil {

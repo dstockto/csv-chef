@@ -66,6 +66,20 @@ func Subtract(x string, y string) (string, error) {
 	return fmt.Sprintf("%f", difference), nil
 }
 
+func Multiply(x string, y string) (string, error) {
+	xnum, err := strconv.ParseFloat(x, 64)
+	if err != nil {
+		return "", fmt.Errorf("error: first arg to multiply was not numeric, got '%s'", x)
+	}
+	ynum, err := strconv.ParseFloat(y, 64)
+	if err != nil {
+		return "", fmt.Errorf("error: second arg to multiply was not numeric, got '%s'", y)
+	}
+
+	product := xnum * ynum
+	return fmt.Sprintf("%f", product), nil
+}
+
 func NumberFormat(digits string, input string) (string, error) {
 	digitsNum, err := strconv.Atoi(digits)
 	if err != nil {
