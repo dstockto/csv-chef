@@ -137,6 +137,22 @@ func Trim(input string) (string, error) {
 	return strings.TrimSpace(input), nil
 }
 
+func FirstChars(count string, input string) (string, error) {
+	num, err := strconv.Atoi(count)
+	if err != nil {
+		return "", fmt.Errorf("first arg is not an integer: got '%s'", count)
+	}
+	if num < 1 {
+		return "", fmt.Errorf("first arg is not a positive integer: got '%s'", count)
+	}
+
+	if num > len(input) {
+		return input, nil
+	}
+
+	return input[:num], nil
+}
+
 func RemoveDigits(input string) (string, error) {
 	reg := regexp.MustCompile("[0-9]+")
 	return reg.ReplaceAllString(input, ""), nil

@@ -217,6 +217,7 @@ I'll indicate that with empty parens. You can leave those off too. Functions are
 * mod(x, y) - returns the remainder of dividing x by y. Both arguments need to be integers. If they are not, an error will happen. If y is zero, an error will be returned.
 * trim(?) - returns the argument with any leading or trailing white-space removed
 * removeDigits(?) - strips all digit characters from the provided value
+* firstChars(count, input) - Returns the first `count` characters of the input. If count is larger than the number of characters in input, all of input is returned.
 * onlyDigits(?) - strips all characters except digits from the provided value
 * normalize_date(format, date) - This function can accept a date in the provided `format` and return a string of that
   date in a format that other functions that need dates can utilize.
