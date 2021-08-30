@@ -579,6 +579,12 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			input:  "2021-08-30T18:22:13-06:00\n1977-08-23T19:49:00-06:00",
 			want:   "2021-08-30\n1977-08-23\n",
 		},
+		{
+			name:   "readDate will read dates with a given format",
+			recipe: "1 <- 1 -> readDate(2) -> formatDate(\"2006-01-02 15:04:05\")\n",
+			input:  "\"Oct 31, 2022\",\"Jan 02, 2006\"\n\"05-09-80\",\"01-02-06\"\n\"01-01-1970\",\"01-02-2006\"\n\"Feb 3, 2004 16:55 MST\",\"Jan 2, 2006 15:04 MST\"\n",
+			want:   "2022-10-31 00:00:00\n1980-05-09 00:00:00\n1970-01-01 00:00:00\n2004-02-03 16:55:00\n",
+		},
 	}
 
 	for _, tt := range tests {

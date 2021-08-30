@@ -168,6 +168,14 @@ func FormatDate(format string, normalDate string) (string, error) {
 	return timestamp.Format(format), nil
 }
 
+func ReadDate(format string, input string) (string, error) {
+	timestamp, err := time.Parse(format, input)
+	if err != nil {
+		return "", fmt.Errorf("unable to parse provided format: %v", err)
+	}
+	return timestamp.Format(time.RFC3339), nil
+}
+
 func NowTime(now func() time.Time) (string, error) {
 	return now().Format(time.RFC3339), nil
 }
