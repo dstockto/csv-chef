@@ -563,8 +563,21 @@ func TestTransformation_ParseExecute(t *testing.T) {
 		{
 			name:   "formatDate can return dates formatted as requested",
 			recipe: "1 <- now -> formatDate(1)\n",
-			input:  "2006-01-02\nAmerica/Denver\n\"Mon Jan 2, 2006 3:04:05 pm\"\n",
-			want:   "2021-08-30\nAmerica/Denver\n\"Mon Aug 30, 2021 6:22:13 pm\"\n",
+			input:  "2006-01-02\nAmerica/Denver\n\"Mon Jan 2, 2006 3:04:05 pm\"\nham\n",
+			want:   "2021-08-30\nAmerica/Denver\n\"Mon Aug 30, 2021 6:22:13 pm\"\nham\n",
+		},
+		{
+			name:        "formatDate called with non-date is an error",
+			recipe:      "1 <- 1 -> formatDate(\"2005-04-03\")",
+			input:       "a\n",
+			wantErr:     true,
+			wantErrText: "line 1 / column 1: formatdate(): unable to read provided format: parsing time \"a\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"a\" as \"2006\"",
+		},
+		{
+			name:   "formatDate with good date",
+			recipe: "1 <- formatDate(\"2006-01-02\", 1)\n",
+			input:  "2021-08-30T18:22:13-06:00\n1977-08-23T19:49:00-06:00",
+			want:   "2021-08-30\n1977-08-23\n",
 		},
 	}
 

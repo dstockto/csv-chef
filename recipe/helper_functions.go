@@ -163,7 +163,7 @@ func Today(now func() time.Time) (string, error) {
 func FormatDate(format string, normalDate string) (string, error) {
 	timestamp, err := time.Parse(time.RFC3339, normalDate)
 	if err != nil {
-		return "", fmt.Errorf("formatdate(), unable to read provided datetime: %v", err)
+		return "", fmt.Errorf("unable to read provided format: %v", err)
 	}
 	return timestamp.Format(format), nil
 }
