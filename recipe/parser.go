@@ -20,6 +20,7 @@ var allFuncs = map[string][]int{
 	"change":       {3},
 	"changei":      {3},
 	"ifempty":      {3},
+	"isempty":      {3}, // alias for ifempty
 	"numberformat": {2},
 	"lineno":       {0},
 	"removedigits": {1},

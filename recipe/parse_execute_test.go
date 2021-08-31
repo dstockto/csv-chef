@@ -289,6 +289,12 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			want:   "EMPTY,hi\nNOT,hi\nEMPTY,!!\n",
 		},
 		{
+			name:   "isempty test (alias of ifempty)",
+			recipe: "1 <- 1 -> isempty(\"EMPTY\", \"NOT\")\n2 <- 2 -> isempty(3, \"!!\")\n",
+			input:  ",,hi\na,,hi\n,b,hi\n",
+			want:   "EMPTY,hi\nNOT,hi\nEMPTY,!!\n",
+		},
+		{
 			name:        "ifempty test with reference error",
 			recipe:      "1 <- ifempty(\"EMPTY\", \"NOT\", $bar)\n",
 			input:       ",,hi\na,,hi\n,b,hi\n",

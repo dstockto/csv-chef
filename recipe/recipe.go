@@ -367,7 +367,7 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 			}
 			updated, _ := ChangeI(args[0], args[1], args[2]) // no errors from this
 			value = updated
-		case "ifempty":
+		case "ifempty", "isempty":
 			args, err := processArgs(3, o.Arguments, context, placeholder)
 			if err != nil {
 				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
