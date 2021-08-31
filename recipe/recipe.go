@@ -468,12 +468,32 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
 			}
 			value = result
+		case "formatdatef":
+			args, err := processArgs(2, o.Arguments, context, placeholder)
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
+			}
+			result, err := FormatDateF(args[0], args[1])
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
+			}
+			value = result
 		case "readdate":
 			args, err := processArgs(2, o.Arguments, context, placeholder)
 			if err != nil {
 				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
 			}
 			result, err := ReadDate(args[0], args[1])
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
+			}
+			value = result
+		case "readdatef":
+			args, err := processArgs(2, o.Arguments, context, placeholder)
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
+			}
+			result, err := ReadDateF(args[0], args[1])
 			if err != nil {
 				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
 			}

@@ -573,6 +573,13 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			want:   "2021-08-30\nAmerica/Denver\n\"Mon Aug 30, 2021 6:22:13 pm\"\nham\n",
 		},
 		{
+			name:        "formatDateF will return error if format unknown",
+			recipe:      "1 <- now -> formatDate(\"2006-01-02\") -> formatDateF(1)\n",
+			input:       "2006-01-02\nAmerica/Denver\n\"Mon Jan 2, 2006 3:04:05 pm\"\nham\n",
+			wantErr:     true,
+			wantErrText: "line 1 / column 1: formatdatef(): expected RFC3339 format for input date: '2021-08-30'",
+		},
+		{
 			name:   "formatDate called with non-date passes input through",
 			recipe: "1 <- 1 -> formatDate(\"2005-04-03\")",
 			input:  "a\n",
@@ -595,6 +602,14 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			recipe: "1 <- 1 -> readDate(\"2006-01-02\") -> readDate(\"1/2/2006\") -> formatDate(\"Jan 2 2006\")",
 			input:  "2021-04-14\n5/6/2019\nbanana\n",
 			want:   "Apr 14 2021\nMay 6 2019\nbanana\n",
+		},
+		{
+			name:        "readDateF will have an error if format is not recognized",
+			recipe:      "1 <- 1 -> readDateF(\"2006-01-02\")",
+			input:       "2021-04-14\n5/6/2019\nbanana\n",
+			wantErr:     true,
+			wantErrText: "line 2 / column 1: readdatef(): unrecognized date '5/6/2019' for format: '2006-01-02'",
+			want:        "Apr 14 2021\nMay 6 2019\nbanana\n",
 		},
 		{
 			name:   "smartDate reads dates... smartly.",

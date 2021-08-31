@@ -169,10 +169,26 @@ func FormatDate(format string, normalDate string) (string, error) {
 	return timestamp.Format(format), nil
 }
 
+func FormatDateF(format string, normalDate string) (string, error) {
+	timestamp, err := time.Parse(time.RFC3339, normalDate)
+	if err != nil {
+		return "", fmt.Errorf("expected RFC3339 format for input date: '%s'", normalDate)
+	}
+	return timestamp.Format(format), nil
+}
+
 func ReadDate(format string, input string) (string, error) {
 	timestamp, err := time.Parse(format, input)
 	if err != nil {
 		return input, nil
+	}
+	return timestamp.Format(time.RFC3339), nil
+}
+
+func ReadDateF(format string, input string) (string, error) {
+	timestamp, err := time.Parse(format, input)
+	if err != nil {
+		return "", fmt.Errorf("unrecognized date '%s' for format: '%s'", input, format)
 	}
 	return timestamp.Format(time.RFC3339), nil
 }

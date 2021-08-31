@@ -224,7 +224,9 @@ I'll indicate that with empty parens. You can leave those off too. Functions are
 * normalize_date(format, date) - This function can accept a date in the provided `format` and return a string of that
   date in a format that other functions that need dates can utilize.
 * formatDate(format, date) - Use this at the end of a line of date operations to get a date in a format that you want. Formatting is go style based on "Mon Jan 01, 2006 15:04:05-0700". It can recognize Monday or January if you want it spelled out, and 03 for 12 hour time, as well as PM or pm if you want that included. The timezone is MST on that day, so MST will spell out the timezone, or America/Denver for the fully spelled out timezone. Incoming date should be normalized to RFC 3339 format first.
-* readDate(format, date) - Reads a date in a given format and returns it in RFC3339 format. Uses go format to specify how to read the date
+* formatDateF(format, date) - Similar to formatDate, this will take an incoming RFC3339 formatted date and return it in the go format specified date format. If the incoming value is not recognized as RFC3339 format, then an error will occur and processing will stop.
+* readDate(format, date) - Reads a date in a given format and returns it in RFC3339 format. Uses go format to specify how to read the date. If the incoming format is not recognized, it will pass the input through unchanged. This allows you to chain more than one readDate if there are several formats you want to recognize.
+* readDateF(format, date) - Reads a date in a given format and returns it in RFC3339 format. If the input does not match the given format, an error is returned which will cause processing to stop.
 * if_after(after, not_after, date) - This function will return the `after` value if today is after the provided `date`,
   or the `not_after` value if today is before `date`.
 * smartDate(date) - Tries to read a date in any reasonable format. If it cannot read as a date it will have an error. In this case, you may want to try specifying a format and using readDate. The return value will be a string of the date in RFC 3339 format if it was recognized as a date.
