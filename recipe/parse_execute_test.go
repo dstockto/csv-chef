@@ -588,8 +588,8 @@ func TestTransformation_ParseExecute(t *testing.T) {
 		{
 			name:   "smartDate reads dates... smartly.",
 			recipe: "1 <- smartDate(1) -> formatDate(\"2006-01-02\")\n",
-			input:  "5/6/1980\n02-03-04\n\"Dec 25, 1980\"\n1942-06-12\n",
-			want:   "1980-05-06\n2002-03-03\n1980-12-24\n1942-06-12\n",
+			input:  "5/6/1980\n03-02-2004\n\"Dec 25, 1980\"\n1942-06-12\n",
+			want:   "1980-05-06\n2004-02-03\n1980-12-25\n1942-06-12\n",
 		},
 	}
 

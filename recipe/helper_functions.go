@@ -178,15 +178,13 @@ func ReadDate(format string, input string) (string, error) {
 }
 
 func SmartDate(date string) (string, error) {
-	now := time.Now()
-	_, offset := now.Zone()
-	t := now.Unix()
-	d, err := strtotime.Parse(date, t)
+	tz := time.UTC
+	d, err := strtotime.Parse(date, 0)
 	if err != nil {
 		return "", err
 	}
 
-	pt := time.Unix(d-int64(offset), 0)
+	pt := time.Unix(d, 0).In(tz)
 
 	return pt.Format(time.RFC3339), nil
 }
