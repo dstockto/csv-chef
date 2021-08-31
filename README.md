@@ -17,38 +17,38 @@ they are legitimate, parseable CSVs.
 
 Please see the recipes section for information about how to build recipes for the program.
 
-Generate
---
-The generate function can use recipe file to generate sample data files using data generation functions.
+Identity
+==
 
-`csv-transform generate /pat/to/output.csv /path/to/recipe --lines=<number of lines, default 100> [--with-header]`
+The `identity` command provides a starter recipe for you based on the provided input file. You may specify that you want to include header recipe lines as well with the `-w` or `--with-headers` option. The command will output recipe that would give back the input file unchanged. If you specify `-o` or `--output` it can output to a file. If not, it would output to the console (stdout). 
 
-The recipes are built in the same way as normal transformations, other than it probably makes no sense to include any
-recipes that reference columns since there's no input file. Here's an example generate recipe with header info:
+Example:
 
 ```
-$first <- fake("first name")
-$last <- fake("last name")
-!1 <- "first name"
-1 <- $first
-!2 <- "last name"
-2 <- $last
-!3 <- "fullname"
-3 <- $first + " " $last -> uppercase
-!4 <- "address"
-4 <- fake("address")
-!5 <- "city"
-5 <- fake("city")
-!6 <- "state"
-6 <- fake("state")
-!7 <- "email"
-7 <- fake("email")
-```
+$ csv-transform identity -w input.csv
 
-As you can see, this could be a useful tool for generating data files with test data for importing into various systems
-that allow importation of CSV files. The first two lines includes creation of variables that can then be used later.
-The `$first` and `$last` variables are used directly in their own columns, but also combined and piped through the
-uppercase function in order to generate a full uppercase name that is consistent with the other two fields.
+!1 <- 1
+1 <- 1
+!2 <- 2
+2 <- 2
+!3 <- 3
+3 <- 3
+!4 <- 4
+4 <- 4
+!5 <- 5
+5 <- 5
+!6 <- 6
+6 <- 6
+!7 <- 7
+7 <- 7
+!8 <- 8
+8 <- 8
+!9 <- 9
+9 <- 9
+!10 <- 10
+10 <- 10
+
+```
 
 Recipes
 ==
