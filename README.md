@@ -227,6 +227,7 @@ I'll indicate that with empty parens. You can leave those off too. Functions are
 * readDate(format, date) - Reads a date in a given format and returns it in RFC3339 format. Uses go format to specify how to read the date
 * if_after(after, not_after, date) - This function will return the `after` value if today is after the provided `date`,
   or the `not_after` value if today is before `date`.
+* smartDate(date) - Tries to read a date in any reasonable format. If it cannot read as a date it will have an error. In this case, you may want to try specifying a format and using readDate. The return value will be a string of the date in RFC 3339 format if it was recognized as a date.
 * only_digits(?) - returns all digit characters from the provided value
 * trim(?) - removes whitespace from the provided value
 * first_chars(num, ?) - returns the first `num` characters of a string

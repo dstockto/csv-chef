@@ -3,6 +3,7 @@ package recipe
 import (
 	"errors"
 	"fmt"
+	"github.com/carmo-evan/strtotime"
 	"log"
 	"regexp"
 	"strconv"
@@ -174,6 +175,20 @@ func ReadDate(format string, input string) (string, error) {
 		return "", fmt.Errorf("unable to parse provided format: %v", err)
 	}
 	return timestamp.Format(time.RFC3339), nil
+}
+
+func SmartDate(date string) (string, error) {
+	now := time.Now()
+	_, offset := now.Zone()
+	t := now.Unix()
+	d, err := strtotime.Parse(date, t)
+	if err != nil {
+		return "", err
+	}
+
+	pt := time.Unix(d-int64(offset), 0)
+
+	return pt.Format(time.RFC3339), nil
 }
 
 func NowTime(now func() time.Time) (string, error) {

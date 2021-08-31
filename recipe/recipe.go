@@ -478,6 +478,16 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
 			}
 			value = result
+		case "smartdate":
+			args, err := processArgs(1, o.Arguments, context, placeholder)
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
+			}
+			result, err := SmartDate(args[0])
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
+			}
+			value = result
 		// TODO make function calling more smart, using the allFuncs thing
 		default:
 			return "", fmt.Errorf("%s error: processing variable, unimplemented operation %s", errorPrefix, o.Name)

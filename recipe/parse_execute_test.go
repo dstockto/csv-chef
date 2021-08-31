@@ -585,6 +585,12 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			input:  "\"Oct 31, 2022\",\"Jan 02, 2006\"\n\"05-09-80\",\"01-02-06\"\n\"01-01-1970\",\"01-02-2006\"\n\"Feb 3, 2004 16:55 MST\",\"Jan 2, 2006 15:04 MST\"\n",
 			want:   "2022-10-31 00:00:00\n1980-05-09 00:00:00\n1970-01-01 00:00:00\n2004-02-03 16:55:00\n",
 		},
+		{
+			name:   "smartDate reads dates... smartly.",
+			recipe: "1 <- smartDate(1) -> formatDate(\"2006-01-02\")\n",
+			input:  "5/6/1980\n02-03-04\n\"Dec 25, 1980\"\n1942-06-12\n",
+			want:   "1980-05-06\n2002-03-03\n1980-12-24\n1942-06-12\n",
+		},
 	}
 
 	for _, tt := range tests {
