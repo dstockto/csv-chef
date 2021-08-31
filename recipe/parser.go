@@ -35,6 +35,8 @@ var allFuncs = map[string][]int{
 	"formatdate":   {2},
 	"readdate":     {2},
 	"smartdate":    {1},
+	"ispast":       {3},
+	"isfuture":     {3},
 
 	"normalize_date": {1, 1},
 	"fake":           {1},

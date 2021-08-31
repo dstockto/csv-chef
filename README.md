@@ -228,6 +228,8 @@ I'll indicate that with empty parens. You can leave those off too. Functions are
 * if_after(after, not_after, date) - This function will return the `after` value if today is after the provided `date`,
   or the `not_after` value if today is before `date`.
 * smartDate(date) - Tries to read a date in any reasonable format. If it cannot read as a date it will have an error. In this case, you may want to try specifying a format and using readDate. The return value will be a string of the date in RFC 3339 format if it was recognized as a date.
+* isPast(past, future, date) - If the provided date is in the past, then the `past` arg is returned. If it's not, then the `future` argument is returned.
+* isFuture(future, past, date) - If the provided date is in the future, then `future` arg is returned. Otherwise, the `past` arg is returned.
 * only_digits(?) - returns all digit characters from the provided value
 * trim(?) - removes whitespace from the provided value
 * first_chars(num, ?) - returns the first `num` characters of a string

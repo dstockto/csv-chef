@@ -189,6 +189,32 @@ func SmartDate(date string) (string, error) {
 	return pt.Format(time.RFC3339), nil
 }
 
+func IsPast(past string, future string, date string) (string, error) {
+	normalizedDate, err := SmartDate(date)
+	if err != nil {
+		return "", fmt.Errorf("unable to recognize date: %v", err)
+	}
+	actualDate, err := time.Parse(time.RFC3339, normalizedDate)
+	now := Now()
+	if now.After(actualDate) {
+		return past, nil
+	}
+	return future, nil
+}
+
+func IsFuture(future string, past string, date string) (string, error) {
+	normalizedDate, err := SmartDate(date)
+	if err != nil {
+		return "", fmt.Errorf("unable to recognize date: %v", err)
+	}
+	actualDate, err := time.Parse(time.RFC3339, normalizedDate)
+	now := Now()
+	if now.Before(actualDate) {
+		return future, nil
+	}
+	return past, nil
+}
+
 func NowTime(now func() time.Time) (string, error) {
 	return now().Format(time.RFC3339), nil
 }

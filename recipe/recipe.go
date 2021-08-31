@@ -488,6 +488,26 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
 			}
 			value = result
+		case "ispast":
+			args, err := processArgs(3, o.Arguments, context, placeholder)
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
+			}
+			result, err := IsPast(args[0], args[1], args[2])
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
+			}
+			value = result
+		case "isfuture":
+			args, err := processArgs(3, o.Arguments, context, placeholder)
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
+			}
+			result, err := IsFuture(args[0], args[1], args[2])
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
+			}
+			value = result
 		// TODO make function calling more smart, using the allFuncs thing
 		default:
 			return "", fmt.Errorf("%s error: processing variable, unimplemented operation %s", errorPrefix, o.Name)

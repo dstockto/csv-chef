@@ -591,6 +591,18 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			input:  "5/6/1980\n03-02-2004\n\"Dec 25, 1980\"\n1942-06-12\n",
 			want:   "1980-05-06\n2004-02-03\n1980-12-25\n1942-06-12\n",
 		},
+		{
+			name:   "isPast returns a value if the date is in the past",
+			recipe: "1 <- 1->isPast(\"past\", \"future\")",
+			input:  "1/1/1980\n\"August 30, 2021 08:00:00-06:00\"\n2021/08/31 12:00:00-06:00\n\"Jan 4, 2022\"\n",
+			want:   "past\npast\nfuture\nfuture\n",
+		},
+		{
+			name:   "isFuture returns a value if the date is in the future",
+			recipe: "1 <- 1->isFuture(\"future\", \"past\")",
+			input:  "1/1/1980\n\"August 30, 2021 08:00:00-06:00\"\n2021/08/31 12:00:00-06:00\n\"Jan 4, 2022\"\n",
+			want:   "past\npast\nfuture\nfuture\n",
+		},
 	}
 
 	for _, tt := range tests {
