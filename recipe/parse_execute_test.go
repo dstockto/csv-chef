@@ -573,11 +573,10 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			want:   "2021-08-30\nAmerica/Denver\n\"Mon Aug 30, 2021 6:22:13 pm\"\nham\n",
 		},
 		{
-			name:        "formatDate called with non-date is an error",
-			recipe:      "1 <- 1 -> formatDate(\"2005-04-03\")",
-			input:       "a\n",
-			wantErr:     true,
-			wantErrText: "line 1 / column 1: formatdate(): unable to read provided format: parsing time \"a\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"a\" as \"2006\"",
+			name:   "formatDate called with non-date passes input through",
+			recipe: "1 <- 1 -> formatDate(\"2005-04-03\")",
+			input:  "a\n",
+			want:   "a\n",
 		},
 		{
 			name:   "formatDate with good date",
@@ -590,6 +589,12 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			recipe: "1 <- 1 -> readDate(2) -> formatDate(\"2006-01-02 15:04:05\")\n",
 			input:  "\"Oct 31, 2022\",\"Jan 02, 2006\"\n\"05-09-80\",\"01-02-06\"\n\"01-01-1970\",\"01-02-2006\"\n\"Feb 3, 2004 16:55 MST\",\"Jan 2, 2006 15:04 MST\"\n",
 			want:   "2022-10-31 00:00:00\n1980-05-09 00:00:00\n1970-01-01 00:00:00\n2004-02-03 16:55:00\n",
+		},
+		{
+			name:   "readDate will pass the input unchanged if it's not recognized",
+			recipe: "1 <- 1 -> readDate(\"2006-01-02\") -> readDate(\"1/2/2006\") -> formatDate(\"Jan 2 2006\")",
+			input:  "2021-04-14\n5/6/2019\nbanana\n",
+			want:   "Apr 14 2021\nMay 6 2019\nbanana\n",
 		},
 		{
 			name:   "smartDate reads dates... smartly.",

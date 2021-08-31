@@ -164,7 +164,7 @@ func Today(now func() time.Time) (string, error) {
 func FormatDate(format string, normalDate string) (string, error) {
 	timestamp, err := time.Parse(time.RFC3339, normalDate)
 	if err != nil {
-		return "", fmt.Errorf("unable to read provided format: %v", err)
+		return normalDate, nil
 	}
 	return timestamp.Format(format), nil
 }
@@ -172,7 +172,7 @@ func FormatDate(format string, normalDate string) (string, error) {
 func ReadDate(format string, input string) (string, error) {
 	timestamp, err := time.Parse(format, input)
 	if err != nil {
-		return "", fmt.Errorf("unable to parse provided format: %v", err)
+		return input, nil
 	}
 	return timestamp.Format(time.RFC3339), nil
 }
