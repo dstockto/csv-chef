@@ -641,6 +641,13 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			input:  "2021-07-04,\n,\n2021-08-30,\n2021-08-31,\n2022-01-01,\n",
 			want:   "2021-07-04T00:00:00Z,\n,\n2021-08-30T00:00:00Z,\n2021-08-31T00:00:00Z,\n2022-01-01T00:00:00Z,\n",
 		},
+		{
+			name:          "columns are automatically named if not provided in source",
+			recipe:        "1<-1\n2<-1\n3<-1\n",
+			input:         "header\na\nb\n",
+			processHeader: true,
+			want:          "header,column 2,column 3\na,a,a\nb,b,b\n",
+		},
 	}
 
 	for _, tt := range tests {

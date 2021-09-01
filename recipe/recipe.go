@@ -222,6 +222,8 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 				var value string
 				if i <= len(row) {
 					value = row[i-1]
+				} else {
+					value = fmt.Sprintf("column %d", i)
 				}
 				output[i] = value
 			}
