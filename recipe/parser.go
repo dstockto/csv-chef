@@ -73,17 +73,17 @@ func Parse(source io.Reader) (*Transformation, error) {
 
 		// Found column or variable to assign result to
 		target := lit
-		var targetType string
+		var targetType DataType
 		if tok == COLUMN_ID {
 			transformation.AddOutputToColumn(lit)
-			targetType = "column"
+			targetType = Column
 		} else if tok == VARIABLE {
 			transformation.AddOutputToVariable(lit)
 			transformation.VariableOrder = append(transformation.VariableOrder, lit)
-			targetType = "variable"
+			targetType = Variable
 		} else if tok == HEADER {
 			transformation.AddOutputToHeader(lit)
-			targetType = "header"
+			targetType = Header
 		}
 
 		// After column or variable, we need the assignment <- operator
@@ -122,18 +122,18 @@ func Parse(source io.Reader) (*Transformation, error) {
 			case PLUS:
 				transformation.AddOperationByType(targetType, target, getJoinWithPlaceholder())
 			case COMMENT:
-				if targetType == "variable" {
+				if targetType == Variable {
 					recipe := transformation.Variables[target]
 					recipe.Comment = lit
 					transformation.Variables[target] = recipe
 				}
-				if targetType == "column" {
+				if targetType == Column {
 					columnNum, _ := strconv.Atoi(target)
 					recipe := transformation.Columns[columnNum]
 					recipe.Comment = lit
 					transformation.Columns[columnNum] = recipe
 				}
-				if targetType == "header" {
+				if targetType == Header {
 					headerNum, _ := strconv.Atoi(target)
 					recipe := transformation.Headers[headerNum]
 					recipe.Comment = lit
@@ -227,21 +227,21 @@ func getJoinWithPlaceholder() Operation {
 
 func getOutputForColumn(col string) Output {
 	return Output{
-		Type:  "column",
+		Type:  Column,
 		Value: col,
 	}
 }
 
 func getOutputForVariable(v string) Output {
 	return Output{
-		Type:  "variable",
+		Type:  Variable,
 		Value: v,
 	}
 }
 
 func getOutputForHeader(h string) Output {
 	return Output{
-		Type:  "header",
+		Type:  Header,
 		Value: h,
 	}
 }
@@ -322,28 +322,28 @@ ARGLOOP:
 
 func variableArg(lit string) Argument {
 	return Argument{
-		Type:  "variable",
+		Type:  Variable,
 		Value: lit,
 	}
 }
 
 func columnArg(lit string) Argument {
 	return Argument{
-		Type:  "column",
+		Type:  Column,
 		Value: lit,
 	}
 }
 
 func literalArg(lit string) Argument {
 	return Argument{
-		Type:  "literal",
+		Type:  Literal,
 		Value: lit,
 	}
 }
 
 func placeholderArg() Argument {
 	return Argument{
-		Type:  "placeholder",
+		Type:  Placeholder,
 		Value: "?",
 	}
 }

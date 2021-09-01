@@ -297,10 +297,7 @@ func TestParse(t *testing.T) {
 						Pipe: []Operation{
 							getColumn("6"),
 							getFunction("uppercase", []Argument{
-								{
-									Type:  "placeholder",
-									Value: "?",
-								},
+								placeholderArg(),
 							}),
 						},
 					},
@@ -354,14 +351,8 @@ func TestParse(t *testing.T) {
 						Output: getOutputForVariable("$name"),
 						Pipe: []Operation{
 							getFunction("fake", []Argument{
-								{
-									Type:  "literal",
-									Value: "name",
-								},
-								{
-									Type:  "placeholder",
-									Value: "?",
-								},
+								literalArg("name"),
+								placeholderArg(),
 							}),
 						},
 						Comment: "random name goes in",
@@ -385,10 +376,7 @@ func TestParse(t *testing.T) {
 							{
 								Name: "fake",
 								Arguments: []Argument{
-									{
-										Type:  "placeholder",
-										Value: "?",
-									},
+									placeholderArg(),
 								},
 							},
 						},
@@ -410,18 +398,9 @@ func TestParse(t *testing.T) {
 							{
 								Name: "add",
 								Arguments: []Argument{
-									{
-										Type:  "column",
-										Value: "2",
-									},
-									{
-										Type:  "variable",
-										Value: "$apples",
-									},
-									{
-										Type:  "placeholder",
-										Value: "?",
-									},
+									columnArg("2"),
+									variableArg("$apples"),
+									placeholderArg(),
 								},
 							},
 						},
@@ -445,31 +424,16 @@ func TestParse(t *testing.T) {
 							{
 								Name: "add",
 								Arguments: []Argument{
-									{
-										Type:  "column",
-										Value: "2",
-									},
-									{
-										Type:  "variable",
-										Value: "$apples",
-									},
-									{
-										Type:  "placeholder",
-										Value: "?",
-									},
+									columnArg("2"),
+									variableArg("$apples"),
+									placeholderArg(),
 								},
 							},
 							{
 								Name: "normalize_date",
 								Arguments: []Argument{
-									{
-										Type:  "literal",
-										Value: "Y-m-d",
-									},
-									{
-										Type:  "placeholder",
-										Value: "?",
-									},
+									literalArg("Y-m-d"),
+									placeholderArg(),
 								},
 							},
 						},

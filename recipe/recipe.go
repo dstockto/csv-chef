@@ -10,7 +10,7 @@ import (
 )
 
 type Output struct {
-	Type  string
+	Type  DataType
 	Value string
 }
 
@@ -33,14 +33,14 @@ func (j *JoinMode) String() string {
 }
 
 func (o *Output) GetValue(ctx LineContext) (string, error) {
-	if o.Type == "variable" {
+	if o.Type == Variable {
 		value, ok := ctx.Variables[o.Value]
 		if !ok {
 			return "", errors.New("unrecognized variable")
 		}
 		return value, nil
 	}
-	if o.Type == "column" {
+	if o.Type == Column {
 		column, _ := strconv.Atoi(o.Value)
 		value, ok := ctx.Columns[column]
 		if !ok {
@@ -53,32 +53,32 @@ func (o *Output) GetValue(ctx LineContext) (string, error) {
 }
 
 type Argument struct {
-	Type  string
+	Type  DataType
 	Value string
 }
 
 func (a *Argument) GetValue(context LineContext, placeholder string) (string, error) {
 	var value string
 	switch a.Type {
-	case "column":
+	case Column:
 		colNum, _ := strconv.Atoi(a.Value)
 		colValue, ok := context.Columns[colNum]
 		if !ok {
 			return "", fmt.Errorf("column %d referenced, but it does not exist in the input", colNum)
 		}
 		value = colValue
-	case "variable":
+	case Variable:
 		varValue, ok := context.Variables[a.Value]
 		if !ok {
 			return "", fmt.Errorf("variable '%s' referenced, but it is not defined", a.Value)
 		}
 		value = varValue
-	case "literal":
+	case Literal:
 		return a.Value, nil
-	case "placeholder":
+	case Placeholder:
 		return placeholder, nil
 	default:
-		return "", fmt.Errorf("argument GetValue not implemented for type %s", a.Type)
+		return "", fmt.Errorf("argument GetValue not implemented for type %s", a.Type.String())
 	}
 
 	return value, nil
@@ -115,7 +115,7 @@ func (t *Transformation) Dump(w io.Writer) {
 		for _, p := range h.Pipe {
 			_, _ = fmt.Fprintf(w, p.Name+"(")
 			for _, a := range p.Arguments {
-				_, _ = fmt.Fprintf(w, "%s: %s, ", a.Type, a.Value)
+				_, _ = fmt.Fprintf(w, "%s: %s, ", a.Type.String(), a.Value)
 			}
 			_, _ = fmt.Fprintf(w, ") -> ")
 		}
@@ -130,7 +130,7 @@ func (t *Transformation) Dump(w io.Writer) {
 		for _, p := range v.Pipe {
 			_, _ = fmt.Fprint(w, p.Name+"(")
 			for _, a := range p.Arguments {
-				_, _ = fmt.Fprintf(w, "%s: %s, ", a.Type, a.Value)
+				_, _ = fmt.Fprintf(w, "%s: %s, ", a.Type.String(), a.Value)
 			}
 			_, _ = fmt.Fprintf(w, ") -> ")
 		}
@@ -146,7 +146,7 @@ func (t *Transformation) Dump(w io.Writer) {
 		for _, p := range c.Pipe {
 			_, _ = fmt.Fprintf(w, p.Name+"(")
 			for _, a := range p.Arguments {
-				_, _ = fmt.Fprintf(w, "%s: %s, ", a.Type, a.Value)
+				_, _ = fmt.Fprintf(w, "%s: %s, ", a.Type.String(), a.Value)
 			}
 			_, _ = fmt.Fprint(w, ") -> ")
 		}
@@ -317,7 +317,7 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 			}
 			value = argValue
 			// If the argument is placeholder then there's something coming after
-			if firstArg.Type == "placeholder" {
+			if firstArg.Type == Placeholder {
 				continue
 			}
 		case "uppercase":
@@ -585,7 +585,7 @@ func processArgs(numArgs int, arguments []Argument, context LineContext, placeho
 
 func getPlaceholderArg() Argument {
 	return Argument{
-		Type:  "placeholder",
+		Type:  Placeholder,
 		Value: "?",
 	}
 }
@@ -637,13 +637,13 @@ func (t *Transformation) AddOperationToHeader(header string, operation Operation
 	t.Headers[headerNumber] = recipe
 }
 
-func (t *Transformation) AddOperationByType(targetType string, target string, operation Operation) {
+func (t *Transformation) AddOperationByType(targetType DataType, target string, operation Operation) {
 	switch targetType {
-	case "variable":
+	case Variable:
 		t.AddOperationToVariable(target, operation)
-	case "column":
+	case Column:
 		t.AddOperationToColumn(target, operation)
-	case "header":
+	case Header:
 		t.AddOperationToHeader(target, operation)
 	}
 }

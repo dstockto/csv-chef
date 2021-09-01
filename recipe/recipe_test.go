@@ -33,7 +33,7 @@ func TestNewTransformation(t *testing.T) {
 
 func TestOutput_GetValue(t *testing.T) {
 	type fields struct {
-		Type  string
+		Type  DataType
 		Value string
 	}
 	type args struct {
@@ -49,7 +49,7 @@ func TestOutput_GetValue(t *testing.T) {
 		{
 			name: "get value from variable",
 			fields: fields{
-				Type:  "variable",
+				Type:  Variable,
 				Value: "orange",
 			},
 			args: args{
@@ -64,7 +64,7 @@ func TestOutput_GetValue(t *testing.T) {
 		{
 			name: "get value from column",
 			fields: fields{
-				Type:  "column",
+				Type:  Column,
 				Value: "2",
 			},
 			args: args{
@@ -79,7 +79,7 @@ func TestOutput_GetValue(t *testing.T) {
 		{
 			name: "get value from non-existent column",
 			fields: fields{
-				Type:  "column",
+				Type:  Column,
 				Value: "5",
 			},
 			args: args{
@@ -94,7 +94,7 @@ func TestOutput_GetValue(t *testing.T) {
 		{
 			name: "get value from non-existent variable",
 			fields: fields{
-				Type:  "variable",
+				Type:  Variable,
 				Value: "plop",
 			},
 			args: args{
@@ -135,7 +135,7 @@ func TestTransformation_AddOutputToVariable(t1 *testing.T) {
 			name:     "add variable output",
 			variable: "floop",
 			want: Output{
-				Type:  "variable",
+				Type:  Variable,
 				Value: "floop",
 			},
 		},
@@ -164,7 +164,7 @@ func TestTransformation_AddOutputToHeader(t1 *testing.T) {
 			header:    "5",
 			headerNum: 5,
 			want: Output{
-				Type:  "header",
+				Type:  Header,
 				Value: "5",
 			},
 		},
@@ -193,7 +193,7 @@ func TestTransformation_AddOutputToColumn(t1 *testing.T) {
 			column:    "42",
 			columnNum: 42,
 			want: Output{
-				Type:  "column",
+				Type:  Column,
 				Value: "42",
 			},
 		},
@@ -235,19 +235,13 @@ func TestTransformation_AddOperationToVariable(t1 *testing.T) {
 			operation: Operation{
 				Name: "value",
 				Arguments: []Argument{
-					{
-						Type:  "literal",
-						Value: "ham",
-					},
+					literalArg("ham"),
 				},
 			},
 			want: Operation{
 				Name: "value",
 				Arguments: []Argument{
-					{
-						Type:  "literal",
-						Value: "ham",
-					},
+					literalArg("ham"),
 				},
 			},
 		},
@@ -261,19 +255,13 @@ func TestTransformation_AddOperationToVariable(t1 *testing.T) {
 			operation: Operation{
 				Name: "value",
 				Arguments: []Argument{
-					{
-						Type:  "literal",
-						Value: "sammich",
-					},
+					literalArg("sammich"),
 				},
 			},
 			want: Operation{
 				Name: "value",
 				Arguments: []Argument{
-					{
-						Type:  "literal",
-						Value: "sammich",
-					},
+					literalArg("sammich"),
 				},
 			},
 		},
@@ -315,10 +303,7 @@ func TestTransformation_AddOperationToColumn(t1 *testing.T) {
 				Variables: map[string]Recipe{},
 				Columns: map[int]Recipe{
 					10: {
-						Output: Output{
-							Type:  "column",
-							Value: "10",
-						},
+						Output:  getOutputForColumn("10"),
 						Pipe:    []Operation{},
 						Comment: "",
 					},
@@ -327,19 +312,13 @@ func TestTransformation_AddOperationToColumn(t1 *testing.T) {
 			operation: Operation{
 				Name: "value",
 				Arguments: []Argument{
-					{
-						Type:  "column",
-						Value: "3",
-					},
+					columnArg("3"),
 				},
 			},
 			want: Operation{
 				Name: "value",
 				Arguments: []Argument{
-					{
-						Type:  "column",
-						Value: "3",
-					},
+					columnArg("3"),
 				},
 			},
 		},
@@ -354,19 +333,13 @@ func TestTransformation_AddOperationToColumn(t1 *testing.T) {
 			operation: Operation{
 				Name: "value",
 				Arguments: []Argument{
-					{
-						Type:  "placeholder",
-						Value: "?",
-					},
+					placeholderArg(),
 				},
 			},
 			want: Operation{
 				Name: "value",
 				Arguments: []Argument{
-					{
-						Type:  "placeholder",
-						Value: "?",
-					},
+					placeholderArg(),
 				},
 			},
 		},
@@ -381,19 +354,13 @@ func TestTransformation_AddOperationToColumn(t1 *testing.T) {
 			operation: Operation{
 				Name: "value",
 				Arguments: []Argument{
-					{
-						Type:  "placeholder",
-						Value: "?",
-					},
+					placeholderArg(),
 				},
 			},
 			want: Operation{
 				Name: "value",
 				Arguments: []Argument{
-					{
-						Type:  "placeholder",
-						Value: "?",
-					},
+					placeholderArg(),
 				},
 			},
 		},
@@ -405,18 +372,12 @@ func TestTransformation_AddOperationToColumn(t1 *testing.T) {
 				Variables: map[string]Recipe{},
 				Columns: map[int]Recipe{
 					10: {
-						Output: Output{
-							Type:  "column",
-							Value: "10",
-						},
+						Output: getOutputForColumn("10"),
 						Pipe: []Operation{
 							{
 								Name: "fake",
 								Arguments: []Argument{
-									{
-										Type:  "literal",
-										Value: "name",
-									},
+									literalArg("name"),
 								},
 							},
 						},
@@ -427,19 +388,13 @@ func TestTransformation_AddOperationToColumn(t1 *testing.T) {
 			operation: Operation{
 				Name: "value",
 				Arguments: []Argument{
-					{
-						Type:  "column",
-						Value: "3",
-					},
+					columnArg("3"),
 				},
 			},
 			want: Operation{
 				Name: "value",
 				Arguments: []Argument{
-					{
-						Type:  "column",
-						Value: "3",
-					},
+					columnArg("3"),
 				},
 			},
 		},
