@@ -1,4 +1,4 @@
-module github.com/dstockto/csv-transform
+module github.com/dstockto/csv-chef
 
 go 1.16
 

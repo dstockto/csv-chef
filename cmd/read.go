@@ -24,7 +24,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/dstockto/csv-transform/csv"
+	"github.com/dstockto/csv-chef/csv"
 	"github.com/google/martian/log"
 	"github.com/spf13/cobra"
 	"io"

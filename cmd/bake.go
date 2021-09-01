@@ -25,7 +25,7 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
-	"github.com/dstockto/csv-transform/recipe"
+	"github.com/dstockto/csv-chef/recipe"
 	"github.com/google/martian/log"
 	"os"
 

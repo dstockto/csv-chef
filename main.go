@@ -21,7 +21,7 @@ THE SOFTWARE.
 */
 package main
 
-import "github.com/dstockto/csv-transform/cmd"
+import "github.com/dstockto/csv-chef/cmd"
 
 func main() {
 	cmd.Execute()

@@ -1,16 +1,16 @@
-CSV-Transform
+CSV-Chef
 ===
 
 This project is intended to make CSV->CSV transformations easy to define and execute. The program uses a "recipe" which
 is a program that is designed and intended to be simple and easy to understand, even if you're not a developer.
 
-There are two main modes of operation: transform and generate.
+There are two main modes of operation: bake and generate. Generate will be coming in a future version.
 
 Bake
 --
 This is intended to be the main mode.
 
-`csv-transform bake /path/to/input.csv /path/to/output.csv /path/to/recipefile`
+`csv-chef bake /path/to/input.csv /path/to/output.csv /path/to/recipefile`
 
 The program requires an input CSV file, an output CSV file and a recipe file. CSVs can be whatever you want as long as they are legitimate, parseable CSVs. You can provide `-n` or `--lines` to specify how many lines you which to process. By default, the first line is considered a header and will follow the header recipe rules if provided. If not provided, the headers will remain unchanged from the input file, according to the column they originally were in with any extra columns being written as `col #` where # is the column number that didn't have a header specified. To disable header processing please specify `--no-header` or `-d`.
 
@@ -24,7 +24,7 @@ The `identity` command provides a starter recipe for you based on the provided i
 Example:
 
 ```
-$ csv-transform identity -w input.csv
+$ csv-chef identity -w input.csv
 
 !1 <- 1
 1 <- 1

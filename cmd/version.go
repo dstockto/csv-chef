@@ -23,7 +23,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/dstockto/csv-transform/recipe"
+	"github.com/dstockto/csv-chef/recipe"
 	"github.com/spf13/cobra"
 	"runtime"
 )
@@ -32,9 +32,9 @@ import (
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Return the version of this software",
-	Long: `Return the version of this software`,
+	Long:  `Return the version of this software`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("csv-transform %s by %s - %s/%s\n", recipe.Version(), recipe.Author(), runtime.GOOS, runtime.GOARCH)
+		fmt.Printf("csv-chef %s by %s - %s/%s\n", recipe.Version(), recipe.Author(), runtime.GOOS, runtime.GOARCH)
 	},
 }
 

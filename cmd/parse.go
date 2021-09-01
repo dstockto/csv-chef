@@ -23,7 +23,7 @@ package cmd
 
 import (
 	"errors"
-	"github.com/dstockto/csv-transform/recipe"
+	"github.com/dstockto/csv-chef/recipe"
 	"github.com/google/martian/log"
 	"github.com/spf13/cobra"
 	"os"
