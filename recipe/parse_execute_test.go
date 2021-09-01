@@ -629,6 +629,18 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			input:  "1/1/1980\n\"August 30, 2021 08:00:00-06:00\"\n2021/08/31 12:00:00-06:00\n\"Jan 4, 2022\"\n",
 			want:   "past\npast\nfuture\nfuture\n",
 		},
+		{
+			name:   "isPast will leave non-date input untouched",
+			recipe: "1 <- 1 -> readDate(\"2006-01-02\") -> isPast(\"SENT\", \"UNSENT\")",
+			input:  "2021-07-04,\n,\n2021-08-30,\n2021-08-31,\n2022-01-01,\n",
+			want:   "SENT\n\nSENT\nSENT\nUNSENT\n",
+		},
+		{
+			name:   "readDate will leave unrecognized input untouched",
+			recipe: "1 <- 1 -> readDate(\"2006-01-02\")\n2<-2\n",
+			input:  "2021-07-04,\n,\n2021-08-30,\n2021-08-31,\n2022-01-01,\n",
+			want:   "2021-07-04T00:00:00Z,\n,\n2021-08-30T00:00:00Z,\n2021-08-31T00:00:00Z,\n2022-01-01T00:00:00Z,\n",
+		},
 	}
 
 	for _, tt := range tests {
@@ -652,7 +664,7 @@ func TestTransformation_ParseExecute(t *testing.T) {
 				return time.Date(2021, 8, 30, 18, 22, 13, 4445788, loc)
 			}
 
-			err = transformation.Execute(csv.NewReader(strings.NewReader(tt.input)), writer, tt.processHeader)
+			_, err = transformation.Execute(csv.NewReader(strings.NewReader(tt.input)), writer, tt.processHeader, -1)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("execute error = %v, wantErr %v", err, tt.wantErr)
 			}

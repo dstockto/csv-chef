@@ -194,6 +194,10 @@ func ReadDateF(format string, input string) (string, error) {
 }
 
 func SmartDate(date string) (string, error) {
+	if _, err := time.Parse(time.RFC3339, date); err == nil {
+		return date, nil
+	}
+
 	tz := time.UTC
 	d, err := strtotime.Parse(date, 0)
 	if err != nil {
@@ -206,6 +210,9 @@ func SmartDate(date string) (string, error) {
 }
 
 func IsPast(past string, future string, date string) (string, error) {
+	if date == "" {
+		return "", nil
+	}
 	normalizedDate, err := SmartDate(date)
 	if err != nil {
 		return "", fmt.Errorf("unable to recognize date: %v", err)

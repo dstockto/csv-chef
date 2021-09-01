@@ -102,6 +102,11 @@ type Transformation struct {
 	VariableOrder []string
 }
 
+type TransformationResult struct {
+	HeaderLines int
+	Lines       int
+}
+
 func (t *Transformation) Dump(w io.Writer) {
 	_, _ = fmt.Fprintln(w, "Headers: \n=====")
 	for _, h := range t.Headers {
@@ -166,24 +171,26 @@ func (t *Transformation) AddOutputToHeader(header string) {
 	t.Headers[headerNum] = Recipe{Output: output}
 }
 
-func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, processHeader bool) error {
+func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, processHeader bool, lineLimit int) (*TransformationResult, error) {
 	defer writer.Flush()
 
 	numColumns := len(t.Columns)
 
 	if err := t.ValidateRecipe(); err != nil {
-		return err
+		return nil, err
 	}
 	var linesRead int
 
 	for {
-
+		if lineLimit > 0 && linesRead >= lineLimit {
+			break
+		}
 		row, err := reader.Read()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			return err
+			return nil, err
 		}
 		linesRead++
 
@@ -203,7 +210,7 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 			variableRecipe := t.Variables[v]
 			placeholder, err := t.processRecipe("variable", variableRecipe, context)
 			if err != nil {
-				return err
+				return nil, err
 			}
 			context.Variables[variableName] = placeholder
 		}
@@ -223,14 +230,14 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 				headerRecipe := t.Headers[h]
 				placeholder, err := t.processRecipe("header", headerRecipe, context)
 				if err != nil {
-					return err
+					return nil, err
 				}
 				output[h] = placeholder
 			}
 
 			err := t.outputCsvRow(numColumns, output, writer)
 			if err != nil {
-				return err
+				return nil, err
 			}
 		}
 
@@ -241,14 +248,14 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 				columnRecipe := t.Columns[c]
 				placeholder, err := t.processRecipe("column", columnRecipe, context)
 				if err != nil {
-					return err
+					return nil, err
 				}
 				output[c] = placeholder
 			}
 
 			err = t.outputCsvRow(numColumns, output, writer)
 			if err != nil {
-				return err
+				return nil, err
 			}
 		}
 
@@ -257,7 +264,17 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 		}
 	}
 
-	return nil
+	var headerLines int
+	if processHeader {
+		headerLines = 1
+	}
+
+	result := TransformationResult{
+		Lines:       linesRead - headerLines,
+		HeaderLines: headerLines,
+	}
+
+	return &result, nil
 }
 
 func (t *Transformation) outputCsvRow(numColumns int, output map[int]string, writer *csv.Writer) error {
