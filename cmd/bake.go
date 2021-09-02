@@ -23,7 +23,6 @@ package cmd
 
 import (
 	"encoding/csv"
-	"errors"
 	"fmt"
 	"github.com/dstockto/csv-chef/recipe"
 	"github.com/google/martian/log"
@@ -36,6 +35,9 @@ var (
 	transformLines int
 	disableHeader  bool
 	forceOverwrite bool
+	inputFile      string
+	outputFile     string
+	recipeFile     string
 )
 
 // bakeCmd represents the bake command
@@ -48,21 +50,24 @@ created in the recipe file. Please see the README for how to make recipes. The -
 overwrite the output file if it exists. The -d flag will disable processing of headers with header rules 
 for the first line of the file. The -n flag can tag a number representing the maximum number of lines
 to process from the input file. This can be helpful if you are testing a recipe and the input file is large.'`,
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 3 {
-			return errors.New("bake requires an input file, output file and a recipe")
-		}
-		return nil
-	},
 	Run: runBake,
 }
 
 func runBake(cmd *cobra.Command, args []string) {
-	inFileName := args[0]
-	outFileName := args[1]
-	recipeFileName := args[2]
+	if inputFile == "" {
+		log.Errorf("Please specify an input file path with -i or --in")
+		os.Exit(1)
+	}
+	if outputFile == "" {
+		log.Errorf("Please specify an output file path with -o or --out")
+		os.Exit(1)
+	}
+	if recipeFile == "" {
+		log.Errorf("Please specify a recipe file path with -r -or --recipe")
+		os.Exit(1)
+	}
 
-	in, err := os.Open(inFileName)
+	in, err := os.Open(inputFile)
 	if err != nil {
 		log.Errorf("Error opening input file: %v", err)
 		os.Exit(1)
@@ -70,19 +75,19 @@ func runBake(cmd *cobra.Command, args []string) {
 	defer in.Close()
 
 	// ensure output doesn't exist, or force is specified
-	if _, err := os.Stat(outFileName); err == nil && !forceOverwrite {
+	if _, err := os.Stat(outputFile); err == nil && !forceOverwrite {
 		log.Errorf("Output file already exists: %s", output)
 		os.Exit(5)
 	}
 
-	out, err := os.Create(outFileName)
+	out, err := os.Create(outputFile)
 	if err != nil {
 		log.Errorf("Error creating output file: %v", err)
 		os.Exit(6)
 	}
 	defer out.Close()
 
-	recipeFile, err := os.Open(recipeFileName)
+	recipeFile, err := os.Open(recipeFile)
 	if err != nil {
 		log.Errorf("Unable to open recipe file: %v", err)
 		os.Exit(6)
@@ -106,7 +111,7 @@ func runBake(cmd *cobra.Command, args []string) {
 		os.Exit(8)
 	}
 
-	fmt.Printf("Baking complete. Your output is here: %s\n\n", outFileName)
+	fmt.Printf("Baking complete. Your output is here: %s\n\n", outputFile)
 	fmt.Printf("Processed %d header lines and %d input lines\n", result.HeaderLines, result.Lines)
 }
 
@@ -120,7 +125,10 @@ func init() {
 	// bakeCmd.PersistentFlags().String("foo", "", "A help for foo")
 	bakeCmd.Flags().IntVarP(&transformLines, "lines", "n", -1, "-n 100")
 	bakeCmd.Flags().BoolVarP(&disableHeader, "no-header", "d", false, "--no-header")
-	bakeCmd.Flags().BoolVarP(&forceOverwrite, "force", "f", false, "--force")
+	bakeCmd.Flags().BoolVarP(&forceOverwrite, "force", "f", false, "--force (force output)")
+	bakeCmd.Flags().StringVarP(&inputFile, "in", "i", "", "-i /path/to/input.csv")
+	bakeCmd.Flags().StringVarP(&outputFile, "out", "o", "", "-o /path/to/output.csv")
+	bakeCmd.Flags().StringVarP(&recipeFile, "recipe", "r", "", "-r /path/to/recipe.txt")
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// bakeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
