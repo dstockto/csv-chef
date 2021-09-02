@@ -14,24 +14,6 @@ type Output struct {
 	Value string
 }
 
-type JoinMode int
-
-const (
-	Replace JoinMode = iota
-	Join
-)
-
-func (j *JoinMode) String() string {
-	switch *j {
-	case Replace:
-		return "replace"
-	case Join:
-		return "join"
-	default:
-		return "unknown join type"
-	}
-}
-
 func (o *Output) GetValue(ctx LineContext) (string, error) {
 	if o.Type == Variable {
 		value, ok := ctx.Variables[o.Value]

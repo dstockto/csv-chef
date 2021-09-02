@@ -353,40 +353,6 @@ func NewParser(r io.Reader) *Parser {
 	return &Parser{s: NewScanner(r)}
 }
 
-type Token int
-
-const (
-	ILLEGAL     Token = iota
-	EOF               //1 - end of file
-	WS                //2 - space, tab, newline
-	NEWLINE           //3 - \n (probably not needed)
-	COLUMN_ID         //4 - digits
-	ASSIGNMENT        //5 - <-
-	PIPE              //6 - ->
-	COMMENT           //7 - # ...
-	PLACEHOLDER       //8 - ?
-	PLUS              //9 - +
-	LITERAL           //10 - "quoted"
-	VARIABLE          //11 - starts w/ $
-	FUNCTION          //12 - letters
-	OPEN_PAREN        //13 - (
-	CLOSE_PAREN       //14 - )
-	COMMA             //15 - ,
-	HEADER            //16 - !<digits>
-	//ARGUMENT			// unknown if needed
-
-	//	column_id <- [0-9]+ | p + column_id
-	//column_assign <- "<-"
-	//pipe <- "->"
-	//comment <- "#"
-	//placeholder <- "?"
-	//variable <- [a-zA-z_][a-zA-Z_0-9]*
-	//expression <- column_id | variable | processed_column | function
-	//identifier <- placeholder | variable | column_id
-	//argument_list <- identifier | identifier + "," + argument_list
-	//function <- function_identifier + "(" + argument_list + ")"
-)
-
 func isWhiteSpace(ch rune) bool {
 	return ch == ' ' || ch == '\t' || ch == '\n'
 }
