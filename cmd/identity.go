@@ -72,9 +72,8 @@ func runIdentity(cmd *cobra.Command, args []string) {
 		os.Exit(4)
 	}
 
-	numColumns := len(row)
-
 	var w io.Writer
+
 	if output != "" {
 		// check for existence
 		if _, err := os.Stat(output); err == nil {
@@ -93,18 +92,21 @@ func runIdentity(cmd *cobra.Command, args []string) {
 		w = os.Stdout
 	}
 
-	for i := 1; i <= numColumns; i++ {
+	for zeroIndex, column := range row {
+		num := zeroIndex + 1
 		if withHeaders {
-			_, err = fmt.Fprintf(w, "!%d <- %d\n", i, i)
+			_, err = fmt.Fprintf(w, "!%d <- %d # %s header\n", num, num, column)
+			_, err = fmt.Fprintf(w, "%d <- %d # %s\n", num, num, column)
 			if err != nil {
 				log.Errorf("Error writing header recipe: %v", err)
 				os.Exit(10)
 			}
-		}
-		_, err = fmt.Fprintf(w, "%d <- %d\n", i, i)
-		if err != nil {
-			log.Errorf("Error writing recipe line: %v", err)
-			os.Exit(11)
+		} else {
+			_, err = fmt.Fprintf(w, "%d <- %d\n", num, num)
+			if err != nil {
+				log.Errorf("Error writing recipe line: %v", err)
+				os.Exit(11)
+			}
 		}
 	}
 }
