@@ -21,6 +21,8 @@ Identity
 
 The `identity` command provides a starter recipe for you based on the provided input file. You may specify that you want to include header recipe lines as well with the `-w` or `--with-headers` option. The command will output recipe that would give back the input file unchanged. If you specify `-o` or `--output` it can output to a file. If not, it would output to the console (stdout). 
 
+If the output file already exists, `csv-chef identity` will stop and not write. If you want to write the file anyway, please provide the `-f` or `--force` option.
+
 Example:
 
 ```
