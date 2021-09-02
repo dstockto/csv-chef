@@ -76,9 +76,11 @@ func runIdentity(cmd *cobra.Command, args []string) {
 
 	if output != "" {
 		// check for existence
-		if _, err := os.Stat(output); err == nil {
-			log.Errorf("Output file already exists: %s", output)
-			os.Exit(5)
+		if !forceOverwrite {
+			if _, err := os.Stat(output); err == nil {
+				log.Errorf("Output file already exists: %s", output)
+				os.Exit(5)
+			}
 		}
 
 		f, err := os.Create(output)
@@ -121,6 +123,7 @@ func init() {
 	// identityCmd.PersistentFlags().String("foo", "", "A help for foo")
 	identityCmd.Flags().BoolVarP(&withHeaders, "with-headers", "w", false, "--with-headers")
 	identityCmd.Flags().StringVarP(&output, "output", "o", "", "-o /path/to/output.csv")
+	identityCmd.Flags().BoolVarP(&forceOverwrite, "force", "f", false, "-f (write file even if it exists)")
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// identityCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
