@@ -240,3 +240,9 @@ I'll indicate that with empty parens. You can leave those off too. Functions are
 * repeat(count, ?) - returns the input repeated `count` times, ex: `repeat(3, "apple")` is `appleappleapple`
 * replace(search, replace, ?) - If the `search` string is found within the input, it will be replaced with the `replace` string. If it's not found, the original input is returned unchanged.
 
+Public Recipes
+==
+
+If you're looking for public recipes or want to contribute your recipes for others to use, please take a look here: [https://github.com/dstockto/csv-chef-recipes](https://github.com/dstockto/csv-chef-recipes)
+
+I'll be contributing recipes that I think others might use and I encourage others to do so as well.

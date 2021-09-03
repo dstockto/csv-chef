@@ -648,6 +648,20 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			processHeader: true,
 			want:          "header,column 2,column 3\na,a,a\nb,b,b\n",
 		},
+		{
+			name:          "Blank lines in recipes are ignored",
+			recipe:        "# this is a comment and then there's a blank line\n\n!1 <- 1 # voter_id header\n1 <- 1 # voter_id\n!2 <- 2 # first header\n2 <- 2 # first\n",
+			input:         "header1,header2\na,b\nc,d\n",
+			processHeader: true,
+			want:          "header1,header2\na,b\nc,d\n",
+		},
+		{
+			name:          "Whitespace lines in recipes are ignored",
+			recipe:        "# this is a comment and then there's a whitespace line\n             \n!1 <- 1 # voter_id header\n1 <- 1 # voter_id\n!2 <- 2 # first header\n2 <- 2 # first\n",
+			input:         "header1,header2\na,b\nc,d\n",
+			processHeader: true,
+			want:          "header1,header2\na,b\nc,d\n",
+		},
 	}
 
 	for _, tt := range tests {

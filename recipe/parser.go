@@ -55,6 +55,11 @@ func Parse(source io.Reader) (*Transformation, error) {
 	lines := strings.Split(s, "\n")
 
 	for lineNo, l := range lines {
+		if strings.TrimSpace(l) == "" {
+			// blank lines make the reader get a \0 which is eof which causes the parser to exit, so we
+			// ignore that right here.
+			continue
+		}
 		p := NewParser(strings.NewReader(l))
 
 		// Full Line Comment
