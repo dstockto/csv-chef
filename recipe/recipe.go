@@ -4,9 +4,11 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
+	"golang.org/x/sync/errgroup"
 	"io"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 type Output struct {
@@ -198,6 +200,7 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 		}
 
 		if processHeader && linesRead == 1 {
+			g := new(errgroup.Group)
 			// Load existing headers up to size of output
 			var output = make(map[int]string)
 			for i := 1; i <= numColumns; i++ {
@@ -211,12 +214,21 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 			}
 
 			for h := range t.Headers {
+				h := h
 				headerRecipe := t.Headers[h]
-				placeholder, err := t.processRecipe("header", headerRecipe, context)
-				if err != nil {
-					return nil, err
-				}
-				output[h] = placeholder
+				g.Go(func() error {
+					placeholder, err := t.processRecipe("header", headerRecipe, context)
+					if err != nil {
+						return err
+					}
+					output[h] = placeholder
+					return nil
+				})
+			}
+
+			err = g.Wait()
+			if err != nil {
+				return nil, err
 			}
 
 			err := t.outputCsvRow(numColumns, output, writer)
@@ -225,19 +237,43 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 			}
 		}
 
+		type processResult struct {
+			placeholder string
+			column      int
+		}
+
+		g := new(errgroup.Group)
 		if !processHeader || linesRead > 1 {
-			var output = make(map[int]string)
+			var output = sync.Map{}
+			//var processed = make(chan processResult)
 
 			for c := range t.Columns {
-				columnRecipe := t.Columns[c]
-				placeholder, err := t.processRecipe("column", columnRecipe, context)
-				if err != nil {
-					return nil, err
-				}
-				output[c] = placeholder
+				c := c
+				g.Go(func() error {
+					columnRecipe := t.Columns[c]
+					placeholder, err := t.processRecipe("column", columnRecipe, context)
+					if err != nil {
+						return err
+					}
+					output.Store(c, placeholder)
+					return nil
+				})
+
+			}
+			err = g.Wait()
+			if err != nil {
+				return nil, err
 			}
 
-			err = t.outputCsvRow(numColumns, output, writer)
+			//outputMap := make(map[int]string)
+			//output.Range(func(key, value interface{}) bool {
+			//	k := key.(int)
+			//	v := value.(string)
+			//	outputMap[k] = v
+			//	return true
+			//})
+
+			err = t.outputCsvRowSyncMap(numColumns, output, writer)
 			if err != nil {
 				return nil, err
 			}
@@ -265,6 +301,19 @@ func (t *Transformation) outputCsvRow(numColumns int, output map[int]string, wri
 	var outputRow []string
 	for i := 1; i <= numColumns; i++ {
 		outputRow = append(outputRow, output[i])
+	}
+	err := writer.Write(outputRow)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (t *Transformation) outputCsvRowSyncMap(numColumns int, output sync.Map, writer *csv.Writer) error {
+	var outputRow []string
+	for i := 1; i <= numColumns; i++ {
+		value, _ := output.Load(i)
+		outputRow = append(outputRow, value.(string))
 	}
 	err := writer.Write(outputRow)
 	if err != nil {
