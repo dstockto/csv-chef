@@ -42,7 +42,7 @@ var (
 
 // bakeCmd represents the bake command
 var bakeCmd = &cobra.Command{
-	Use:   "bake /path/to/input.csv /path/to/output.csv /path/to/recipe",
+	Use:   "bake -i /path/to/input.csv -o /path/to/output.csv -r /path/to/recipe",
 	Short: "Bake uses a recipe to transform a CSV file",
 	Long: `Using a recipe file, bake allows you to transform an input file to another
 output file where each output line can be manipulated according to the rules you've 

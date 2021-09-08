@@ -10,7 +10,7 @@ Bake
 --
 This is intended to be the main mode.
 
-`csv-chef bake /path/to/input.csv /path/to/output.csv /path/to/recipefile`
+`csv-chef bake -i /path/to/input.csv -o /path/to/output.csv -r /path/to/recipefile`
 
 The program requires an input CSV file, an output CSV file and a recipe file. CSVs can be whatever you want as long as they are legitimate, parseable CSVs. You can provide `-n` or `--lines` to specify how many lines you which to process. By default, the first line is considered a header and will follow the header recipe rules if provided. If not provided, the headers will remain unchanged from the input file, according to the column they originally were in with any extra columns being written as `col #` where # is the column number that didn't have a header specified. To disable header processing please specify `--no-header` or `-d`.
 
@@ -28,27 +28,26 @@ Example:
 ```
 $ csv-chef identity -w input.csv
 
-!1 <- 1
-1 <- 1
-!2 <- 2
-2 <- 2
-!3 <- 3
-3 <- 3
-!4 <- 4
-4 <- 4
-!5 <- 5
-5 <- 5
-!6 <- 6
-6 <- 6
-!7 <- 7
-7 <- 7
-!8 <- 8
-8 <- 8
-!9 <- 9
-9 <- 9
-!10 <- 10
-10 <- 10
-
+!1 <- 1 # voter_id header
+1 <- 1 # voter_id
+!2 <- 2 # first header
+2 <- 2 # first
+!3 <- 3 # last header
+3 <- 3 # last
+!4 <- 4 # address header
+4 <- 4 # address
+!5 <- 5 # city header
+5 <- 5 # city
+!6 <- 6 # state header
+6 <- 6 # state
+!7 <- 7 # zipcode header
+7 <- 7 # zipcode
+!8 <- 8 # birthdate header
+8 <- 8 # birthdate
+!9 <- 9 # party header
+9 <- 9 # party
+!10 <- 10 # sent header
+10 <- 10 # sent
 ```
 
 Recipes
