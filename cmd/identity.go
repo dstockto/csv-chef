@@ -22,6 +22,7 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"bytes"
 	"encoding/csv"
 	"errors"
 	"fmt"
@@ -97,8 +98,8 @@ func runIdentity(cmd *cobra.Command, args []string) {
 	for zeroIndex, column := range row {
 		num := zeroIndex + 1
 		if withHeaders {
-			_, err = fmt.Fprintf(w, "!%d <- %d # %s header\n", num, num, column)
-			_, err = fmt.Fprintf(w, "%d <- %d # %s\n", num, num, column)
+			_, err = fmt.Fprintf(w, "!%d <- %d # %s header\n", num, num, trimBom(column))
+			_, err = fmt.Fprintf(w, "%d <- %d # %s\n", num, num, trimBom(column))
 			if err != nil {
 				log.Errorf("Error writing header recipe: %v", err)
 				os.Exit(10)
@@ -127,4 +128,8 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// identityCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+func trimBom(input string) string {
+	return string(bytes.Trim([]byte(input), "\xef\xbb\xbf"))
 }
