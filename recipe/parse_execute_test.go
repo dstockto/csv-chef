@@ -662,6 +662,24 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			processHeader: true,
 			want:          "header1,header2\na,b\nc,d\n",
 		},
+		{
+			name:             "column can only be defined once",
+			recipe:           "1 <- 1\n1<-1\n",
+			wantParseErr:     true,
+			wantParseErrText: "error - line 2: column 1 already defined",
+		},
+		{
+			name:             "header can only be defined once",
+			recipe:           "!1 <- 1\n#\n#\n!1<-1\n",
+			wantParseErr:     true,
+			wantParseErrText: "error - line 4: header 1 already defined",
+		},
+		{
+			name:             "variable can only be defined once",
+			recipe:           "$foo <- 1\n#\n#\n#\n$foo<-2\n",
+			wantParseErr:     true,
+			wantParseErrText: "error - line 5: variable $foo already defined",
+		},
 	}
 
 	for _, tt := range tests {
@@ -669,11 +687,15 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			transformation, err := Parse(strings.NewReader(tt.recipe))
 
 			if (err != nil) != tt.wantParseErr {
-				t.Errorf("parse error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("parse error = %v, wantErr %v", err, tt.wantParseErrText)
 				return
 			}
 			if tt.wantParseErr && err.Error() != tt.wantParseErrText {
-				t.Errorf("got parse error text = %v, want error text = %v", err.Error(), tt.wantErrText)
+				t.Errorf("got parse error text = %v, want error text = %v", err.Error(), tt.wantParseErrText)
+				return
+			}
+			if tt.wantParseErr {
+				return
 			}
 
 			var b bytes.Buffer
@@ -688,9 +710,11 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			_, err = transformation.Execute(csv.NewReader(strings.NewReader(tt.input)), writer, tt.processHeader, -1)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("execute error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
 			if tt.wantErr && (err != nil) && err.Error() != tt.wantErrText {
 				t.Errorf("got execute error text = %v, want error text = %v", err.Error(), tt.wantErrText)
+				return
 			}
 			if tt.wantErr {
 				// Leave test here because if we're testing for an error, we aren't testing for output

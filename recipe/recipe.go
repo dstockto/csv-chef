@@ -137,20 +137,35 @@ func (t *Transformation) Dump(w io.Writer) {
 	}
 }
 
-func (t *Transformation) AddOutputToVariable(variable string) {
+func (t *Transformation) AddOutputToVariable(variable string) error {
+	_, ok := t.Variables[variable]
+	if ok {
+		return fmt.Errorf("variable %s already defined", variable)
+	}
 	t.Variables[variable] = Recipe{Output: getOutputForVariable(variable)}
+	return nil
 }
 
-func (t *Transformation) AddOutputToColumn(column string) {
+func (t *Transformation) AddOutputToColumn(column string) error {
 	output := getOutputForColumn(column)
 	columnNum, _ := strconv.Atoi(column)
+	_, ok := t.Columns[columnNum]
+	if ok {
+		return fmt.Errorf("column %d already defined", columnNum)
+	}
 	t.Columns[columnNum] = Recipe{Output: output}
+	return nil
 }
 
-func (t *Transformation) AddOutputToHeader(header string) {
+func (t *Transformation) AddOutputToHeader(header string) error {
 	output := getOutputForHeader(header)
 	headerNum, _ := strconv.Atoi(header)
+	_, ok := t.Headers[headerNum]
+	if ok {
+		return fmt.Errorf("header %d already defined", headerNum)
+	}
 	t.Headers[headerNum] = Recipe{Output: output}
+	return nil
 }
 
 func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, processHeader bool, lineLimit int) (*TransformationResult, error) {

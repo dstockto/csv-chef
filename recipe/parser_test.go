@@ -539,6 +539,24 @@ func TestParse(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name:    "columns can only be defined once",
+			args:    args{source: strings.NewReader("1 <- 1\n1<-1\n")},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name:    "headers can only be defined once",
+			args:    args{source: strings.NewReader("!1 <- 1\n!1<-1\n")},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name:    "variables can only be defined once",
+			args:    args{source: strings.NewReader("$foo <- 1\n$foo<-1\n")},
+			want:    nil,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -80,14 +80,23 @@ func Parse(source io.Reader) (*Transformation, error) {
 		target := lit
 		var targetType DataType
 		if tok == COLUMN_ID {
-			transformation.AddOutputToColumn(lit)
+			err := transformation.AddOutputToColumn(lit)
+			if err != nil {
+				return nil, fmt.Errorf("error - line %d: %s", lineNo+1, err.Error())
+			}
 			targetType = Column
 		} else if tok == VARIABLE {
-			transformation.AddOutputToVariable(lit)
+			err := transformation.AddOutputToVariable(lit)
+			if err != nil {
+				return nil, fmt.Errorf("error - line %d: %s", lineNo+1, err.Error())
+			}
 			transformation.VariableOrder = append(transformation.VariableOrder, lit)
 			targetType = Variable
 		} else if tok == HEADER {
-			transformation.AddOutputToHeader(lit)
+			err := transformation.AddOutputToHeader(lit)
+			if err != nil {
+				return nil, fmt.Errorf("error - line %d: %s", lineNo+1, err.Error())
+			}
 			targetType = Header
 		}
 
