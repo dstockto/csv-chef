@@ -31,9 +31,3 @@ csv-chef-arm:
 
 csv-chef-386:
 	GOOS=linux GOARCH=386 go build -o csv-chef-386
-
-upload: checkenv archives
-	curl -s -u dstockton@i3logix.com -X POST https://api.bitbucket.org/2.0/repositories/i3logix/csv-chef/downloads \
-	-F files=@csv-chef-darwin-amd64-$(version).zip \
-	-F files=@csv-chef-linux-arm-$(version).zip \
-	-F files=@csv-chef-linux-386-$(version).zip
