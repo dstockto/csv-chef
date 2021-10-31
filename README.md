@@ -238,6 +238,7 @@ I'll indicate that with empty parens. You can leave those off too. Functions are
 * last_chars(num, ?) - returns the last `num` characters of a string
 * repeat(count, ?) - returns the input repeated `count` times, ex: `repeat(3, "apple")` is `appleappleapple`
 * replace(search, replace, ?) - If it finds the `search` string within the input, it will be replaced with the `replace` string. If it's not found, then it returns the original input unchanged.
+* power(num, power) - Returns `num` raised to the `power` parameter.  Both values must be numeric.  It will return a string representation of the number.
 
 Public Recipes
 ==
