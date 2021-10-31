@@ -1,4 +1,4 @@
-p ackage recipe
+package recipe
 
 import (
 	"bytes"
