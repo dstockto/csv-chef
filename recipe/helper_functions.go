@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/carmo-evan/strtotime"
 	"log"
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -236,6 +237,19 @@ func IsFuture(future string, past string, date string) (string, error) {
 		return future, nil
 	}
 	return past, nil
+}
+
+func Power(number string, power string) (string, error) {
+    num, err := strconv.ParseFloat(number, 64)
+    if err != nil {
+        return "", fmt.Errorf("unrecognized number '%s' for num parameter", number)
+    }
+    pow, err := strconv.ParseFloat(power, 64)
+    if err != nil {
+        return "", fmt.Errorf("unrecognized number '%s' for power parameter", power)
+    }
+    result := math.Pow(num, pow)
+    return fmt.Sprintf("%f", result), nil
 }
 
 func NowTime(now func() time.Time) (string, error) {
