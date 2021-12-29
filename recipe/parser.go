@@ -41,6 +41,7 @@ var allFuncs = map[string][]int{
 	"ispast":       {3},
 	"isfuture":     {3},
 	"power":        {2},
+	"age":          {1},
 
 	"normalize_date": {1, 1},
 	"fake":           {1},
