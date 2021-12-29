@@ -240,16 +240,32 @@ func IsFuture(future string, past string, date string) (string, error) {
 }
 
 func Power(number string, power string) (string, error) {
-    num, err := strconv.ParseFloat(number, 64)
-    if err != nil {
-        return "", fmt.Errorf("unrecognized number '%s' for num parameter", number)
-    }
-    pow, err := strconv.ParseFloat(power, 64)
-    if err != nil {
-        return "", fmt.Errorf("unrecognized number '%s' for power parameter", power)
-    }
-    result := math.Pow(num, pow)
-    return fmt.Sprintf("%f", result), nil
+	num, err := strconv.ParseFloat(number, 64)
+	if err != nil {
+		return "", fmt.Errorf("unrecognized number '%s' for num parameter", number)
+	}
+	pow, err := strconv.ParseFloat(power, 64)
+	if err != nil {
+		return "", fmt.Errorf("unrecognized number '%s' for power parameter", power)
+	}
+	result := math.Pow(num, pow)
+	return fmt.Sprintf("%f", result), nil
+}
+
+func Age(dob string) (string, error) {
+	normalizedDate, err := SmartDate(dob)
+	if err != nil {
+		return "", err
+	}
+	// Ignoring the error because SmartDate would have already failed on a bad date
+	birthdate, _ := time.Parse(time.RFC3339, normalizedDate)
+	now := time.Now()
+	years := now.Year() - birthdate.Year()
+	if now.YearDay() < birthdate.YearDay() {
+		years--
+	}
+
+	return fmt.Sprintf("%d", years), nil
 }
 
 func NowTime(now func() time.Time) (string, error) {

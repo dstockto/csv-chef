@@ -706,6 +706,12 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			wantErr:     true,
 			wantErrText: "line 2 / column 1: power(): unrecognized number 'apple' for power parameter",
 		},
+		{
+			name:   "age function calculates an age based on a provided dob field",
+			recipe: "1 <- age(1)",
+			input:  "1977-11-07\n2004-02-03\n",
+			want:   "44\n17\n",
+		},
 	}
 
 	for _, tt := range tests {

@@ -223,7 +223,7 @@ I'll indicate that with empty parens. You can leave those off too. Functions are
 * onlyDigits(?) - strips all characters except digits from the provided value
 * normalize_date(format, date) - This function can accept a date in the provided `format` and return a string of that
   date in a format that other functions that need dates can utilize.
-* formatDate(format, date) - Use this at the end of a line of date operations to get a date in a format that you want. Formatting is go style based on "Mon Jan 01, 2006 15:04:05-0700". It can recognize Monday or January if you want it spelled out, and 03 for 12-hour-time, as well as PM or pm if you want that included. The timezone is MST on that day, so MST will spell out the timezone, or America/Denver for the fully spelled out timezone. Incoming date should be normalized to RFC 3339 format first.
+* formatDate(format, date) - Use this at the end of a line of date operations to get a date in a format that you want. Formatting is go style based on "Mon Jan 02, 2006 15:04:05-0700". It can recognize Monday or January if you want it spelled out, and 03 for 12-hour-time, as well as PM or pm if you want that included. The timezone is MST on that day, so MST will spell out the timezone, or America/Denver for the fully spelled out timezone. Incoming date should be normalized to RFC 3339 format first.
 * formatDateF(format, date) - Similar to formatDate, this will take an incoming RFC3339 formatted date and return it in the go format specified date format. If it does not recognize the incoming value as RFC3339 format, then an error will occur and processing will stop.
 * readDate(format, date) - Reads a date in a given format and returns it in RFC3339 format. Uses go format to specify how to read the date. If it does not recognize the incoming format, it will pass the input through unchanged. This allows you to chain more than one readDate if there are several formats you want to recognize.
 * readDateF(format, date) - Reads a date in a given format and returns it in RFC3339 format. If the input does not match the given format, it returns an error which will cause processing to stop.
@@ -239,6 +239,7 @@ I'll indicate that with empty parens. You can leave those off too. Functions are
 * repeat(count, ?) - returns the input repeated `count` times, ex: `repeat(3, "apple")` is `appleappleapple`
 * replace(search, replace, ?) - If it finds the `search` string within the input, it will be replaced with the `replace` string. If it's not found, then it returns the original input unchanged.
 * power(num, power) - Returns `num` raised to the `power` parameter.  Both values must be numeric.  It will return a string representation of the number.
+* age(birthdate) - Returns the age, in years, of someone born on the birthdate provided
 
 Public Recipes
 ==
