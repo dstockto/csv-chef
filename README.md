@@ -16,6 +16,11 @@ The program requires an input CSV file, an output CSV file, and a recipe file. C
 
 Please see the recipes section for information about how to build recipes for the program.
 
+Write
+--
+The `csv-chef` "write" command allows you to create a file filled with fake data representing voter information. You can use this
+to play around with recipes to see how csv-chef works.
+
 Identity
 ==
 
