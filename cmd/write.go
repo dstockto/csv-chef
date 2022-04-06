@@ -66,6 +66,7 @@ func runWrite(cmd *cobra.Command, args []string) {
 		"birthdate",
 		"party",
 		"sent",
+		"email",
 	})
 
 	for i := 0; i < lines; i++ {
@@ -91,6 +92,7 @@ func runWrite(cmd *cobra.Command, args []string) {
 				"GRN",
 			}),
 			sent,
+			faker.Internet().Email(),
 		})
 	}
 	output.Flush()
