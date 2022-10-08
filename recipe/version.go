@@ -1,7 +1,7 @@
 package recipe
 
 func Version() string {
-	return "1.0.3"
+	return "1.0.4"
 }
 
 func Author() string {

@@ -168,7 +168,7 @@ func (t *Transformation) AddOutputToHeader(header string) error {
 	return nil
 }
 
-func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, processHeader bool, lineLimit int) (*TransformationResult, error) {
+func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, processHeader bool, lineLimit int, parseErrIsErr bool) (*TransformationResult, error) {
 	defer writer.Flush()
 
 	numColumns := len(t.Columns)
@@ -189,6 +189,9 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 		if _, ok := err.(*csv.ParseError); ok {
 			fmt.Printf("Bake err: %v\n", err)
 			fmt.Printf(" %+v\n", row)
+			if parseErrIsErr {
+				return nil, err
+			}
 			continue
 		}
 		if err != nil {

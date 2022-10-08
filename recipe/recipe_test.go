@@ -784,7 +784,7 @@ func TestTransformation_Execute(t1 *testing.T) {
 			}
 			var b bytes.Buffer
 			writer := csv.NewWriter(&b)
-			_, err := t.Execute(csv.NewReader(strings.NewReader(tt.args.input)), writer, tt.args.processHeader, -1)
+			_, err := t.Execute(csv.NewReader(strings.NewReader(tt.args.input)), writer, tt.args.processHeader, -1, false)
 			if (err != nil) != tt.wantErr {
 				t1.Errorf("error = %v, wantErr %v", err, tt.wantErr)
 				return

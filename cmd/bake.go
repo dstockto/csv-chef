@@ -66,6 +66,11 @@ func runBake(cmd *cobra.Command, args []string) {
 		log.Errorf("Please specify a recipe file path with -r -or --recipe")
 		os.Exit(1)
 	}
+	parseErrIsError, err := cmd.Flags().GetBool("parseErrorIsError")
+	if err != nil {
+		log.Errorf("Error reading parseErrIsError flag: %s\n", err)
+		os.Exit(1)
+	}
 
 	in, err := os.Open(inputFile)
 	if err != nil {
@@ -105,7 +110,7 @@ func runBake(cmd *cobra.Command, args []string) {
 		transformLines++
 	}
 
-	result, err := transformer.Execute(csv.NewReader(in), csv.NewWriter(out), !disableHeader, transformLines)
+	result, err := transformer.Execute(csv.NewReader(in), csv.NewWriter(out), !disableHeader, transformLines, parseErrIsError)
 	if err != nil {
 		log.Errorf("Error during baking: %v", err)
 		os.Exit(8)
@@ -129,6 +134,7 @@ func init() {
 	bakeCmd.Flags().StringVarP(&inputFile, "in", "i", "", "-i /path/to/input.csv")
 	bakeCmd.Flags().StringVarP(&outputFile, "out", "o", "", "-o /path/to/output.csv")
 	bakeCmd.Flags().StringVarP(&recipeFile, "recipe", "r", "", "-r /path/to/recipe.txt")
+	bakeCmd.Flags().BoolP("parseErrorIsError", "p", false, "-p")
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// bakeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
