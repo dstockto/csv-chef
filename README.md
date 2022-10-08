@@ -14,6 +14,8 @@ This is the main mode.
 
 The program requires an input CSV file, an output CSV file, and a recipe file. CSVs can be whatever you want as long as they are legitimate, correctly formatted CSVs. You can provide `-n` or `--lines` to specify how many lines you which to process. By default, it considers the first line a header and will follow the header recipe rules if provided. If not provided, the headers will remain unchanged from the input file, according to the column they originally were in with any extra columns written as `col #` where # is the column number that didn't have a header specified. To disable header processing please specify `--no-header` or `-d`.
 
+If the bake function runs into a parse error when processing the incoming CSV file (think wrong number of fields) the default functionality will be to output the bad line to standard out, skip writing the line to the output file, and to continue processing the remaining lines. If you'd prefer that processing stops, you can provide the `-p` or `--parseErrorIsError` flag. With this flag provided, the first time a CSV parsing error happens, it will still output the offending line, but it will stop processing and exit with an error code.
+
 Please see the recipes section for information about how to build recipes for the program.
 
 Write

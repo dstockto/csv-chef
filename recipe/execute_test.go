@@ -18,6 +18,6 @@ func BenchmarkExecute(b *testing.B) {
 	buf.Reset()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		transformation.Execute(reader, writer, true, -1)
+		transformation.Execute(reader, writer, true, -1, false)
 	}
 }

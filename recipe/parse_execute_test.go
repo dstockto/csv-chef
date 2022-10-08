@@ -710,7 +710,7 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			name:   "age function calculates an age based on a provided dob field",
 			recipe: "1 <- age(1)",
 			input:  "1977-11-07\n2004-02-03\n",
-			want:   "44\n17\n",
+			want:   "44\n18\n",
 		},
 	}
 
@@ -739,7 +739,7 @@ func TestTransformation_ParseExecute(t *testing.T) {
 				return time.Date(2021, 8, 30, 18, 22, 13, 4445788, loc)
 			}
 
-			_, err = transformation.Execute(csv.NewReader(strings.NewReader(tt.input)), writer, tt.processHeader, -1)
+			_, err = transformation.Execute(csv.NewReader(strings.NewReader(tt.input)), writer, tt.processHeader, -1, false)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("execute error = %v, wantErr %v", err, tt.wantErr)
 				return
