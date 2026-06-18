@@ -47,12 +47,11 @@ var readCmd = &cobra.Command{
 
 func runRead(cmd *cobra.Command, args []string) {
 	csvFile, closeFunc, err := csv.NewCsvSource(args[0])
-	defer closeFunc()
-
 	if err != nil {
 		log.Errorf("%+v", err)
 		os.Exit(1)
 	}
+	defer closeFunc()
 
 	for {
 		line, err := csvFile.Read()
