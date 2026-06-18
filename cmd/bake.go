@@ -24,9 +24,11 @@ package cmd
 import (
 	"encoding/csv"
 	"fmt"
+	"io"
+	"os"
+
 	"github.com/dstockto/csv-chef/recipe"
 	"github.com/google/martian/log"
-	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -73,25 +75,37 @@ func runBake(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	in, err := os.Open(inputFile)
-	if err != nil {
-		log.Errorf("Error opening input file: %v", err)
-		os.Exit(1)
+	var in io.Reader
+	if inputFile == "-" {
+		in = os.Stdin
+	} else {
+		inFile, err := os.Open(inputFile)
+		if err != nil {
+			log.Errorf("Error opening input file: %v", err)
+			os.Exit(1)
+		}
+		defer func() { _ = inFile.Close() }()
+		in = inFile
 	}
-	defer func() { _ = in.Close() }()
 
-	// ensure output doesn't exist, or force is specified
-	if _, err := os.Stat(outputFile); err == nil && !forceOverwrite {
-		log.Errorf("Output file already exists: %s", outputFile)
-		os.Exit(5)
-	}
+	var out io.Writer
+	if outputFile == "-" {
+		out = os.Stdout
+	} else {
+		// ensure output doesn't exist, or force is specified
+		if _, err := os.Stat(outputFile); err == nil && !forceOverwrite {
+			log.Errorf("Output file already exists: %s", outputFile)
+			os.Exit(5)
+		}
 
-	out, err := os.Create(outputFile)
-	if err != nil {
-		log.Errorf("Error creating output file: %v", err)
-		os.Exit(6)
+		outFile, err := os.Create(outputFile)
+		if err != nil {
+			log.Errorf("Error creating output file: %v", err)
+			os.Exit(6)
+		}
+		defer func() { _ = outFile.Close() }()
+		out = outFile
 	}
-	defer func() { _ = out.Close() }()
 
 	recipeFile, err := os.Open(recipeFile)
 	if err != nil {
@@ -119,8 +133,8 @@ func runBake(cmd *cobra.Command, args []string) {
 		os.Exit(8)
 	}
 
-	fmt.Printf("Baking complete. Your output is here: %s\n\n", outputFile)
-	fmt.Printf("Processed %d header lines and %d input lines\n", result.HeaderLines, result.Lines)
+	fmt.Fprintf(os.Stderr, "Baking complete. Your output is here: %s\n\n", outputFile)
+	fmt.Fprintf(os.Stderr, "Processed %d header lines and %d input lines\n", result.HeaderLines, result.Lines)
 }
 
 func init() {
