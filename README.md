@@ -247,6 +247,13 @@ I'll indicate that with empty parens. You can leave those off too. Functions are
 * replace(search, replace, ?) - If it finds the `search` string within the input, it will be replaced with the `replace` string. If it's not found, then it returns the original input unchanged.
 * power(num, power) - Returns `num` raised to the `power` parameter.  Both values must be numeric.  It will return a string representation of the number.
 * age(birthdate) - Returns the age, in years, of someone born on the birthdate provided
+* coalesce(a, b) - Returns `a` if it is not empty, otherwise returns `b`. Handy for falling back to a default value.
+* nth(delimiter, index, ?) - Splits the input on `delimiter` and returns the field at the 1-based `index`. If `index` is beyond the number of fields, an empty string is returned. The `delimiter` must not be empty and `index` must be an integer >= 1, or an error occurs.
+* padLeft(width, pad, ?) - Prepends copies of `pad` to the input until it is at least `width` characters (runes) long, then trims from the left so the result is exactly `width` characters. If the input is already at least `width` long, it is returned unchanged. `width` must be a non-negative integer and `pad` must be non-empty.
+* padRight(width, pad, ?) - Like padLeft, but appends `pad` on the right and trims any overflow from the right to exactly `width` characters (runes).
+* titleCase(?) - Title-cases each whitespace-separated word, making the first character uppercase and the rest lowercase. Words are separated by single spaces in the result.
+* regexReplace(pattern, replacement, ?) - Replaces all matches of the regular expression `pattern` in the input with `replacement` (capture groups like `$1` are supported). If `pattern` is not a valid regular expression, an error occurs.
+* substring(start, length, ?) - Returns up to `length` characters (runes) of the input starting at the 1-based position `start`. If `start` is beyond the input, an empty string is returned; the end is clamped to the input length. `start` must be an integer >= 1 and `length` an integer >= 0.
 
 Public Recipes
 ==

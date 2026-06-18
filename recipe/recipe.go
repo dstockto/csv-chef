@@ -574,6 +574,76 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
 			}
 			value = result
+		case "coalesce":
+			args, err := processArgs(2, o.Arguments, context, placeholder)
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
+			}
+			result, err := Coalesce(args[0], args[1])
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
+			}
+			value = result
+		case "nth":
+			args, err := processArgs(3, o.Arguments, context, placeholder)
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
+			}
+			result, err := Nth(args[0], args[1], args[2])
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
+			}
+			value = result
+		case "padleft":
+			args, err := processArgs(3, o.Arguments, context, placeholder)
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
+			}
+			result, err := PadLeft(args[0], args[1], args[2])
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
+			}
+			value = result
+		case "padright":
+			args, err := processArgs(3, o.Arguments, context, placeholder)
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
+			}
+			result, err := PadRight(args[0], args[1], args[2])
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
+			}
+			value = result
+		case "titlecase":
+			args, err := processArgs(1, o.Arguments, context, placeholder)
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
+			}
+			result, err := TitleCase(args[0])
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
+			}
+			value = result
+		case "regexreplace":
+			args, err := processArgs(3, o.Arguments, context, placeholder)
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
+			}
+			result, err := RegexReplace(args[0], args[1], args[2])
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
+			}
+			value = result
+		case "substring":
+			args, err := processArgs(3, o.Arguments, context, placeholder)
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
+			}
+			result, err := Substring(args[0], args[1], args[2])
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
+			}
+			value = result
 		// TODO make function calling more smart, using the allFuncs thing
 		default:
 			return "", fmt.Errorf("%s error: processing variable, unimplemented operation %s", errorPrefix, o.Name)
