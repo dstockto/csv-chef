@@ -10,4 +10,5 @@ const (
 	Literal
 	Placeholder
 	Header
+	NamedColumn
 )
