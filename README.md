@@ -18,6 +18,8 @@ If the bake function runs into a parse error when processing the incoming CSV fi
 
 You can stream data through `csv-chef` instead of using files. Pass `-i -` to read the input CSV from standard input, and pass `-o -` to write the output CSV to standard output. When writing to standard output, the "output file already exists" check is skipped and status messages are sent to standard error so they don't pollute the CSV stream. For example: `printf 'a\nb\n' | csv-chef bake -i - -o - -r recipe.txt -d`.
 
+By default `csv-chef` reads and writes comma-delimited files. You can change the field delimiter with `--delimiter`, which sets the delimiter for both input and output. To use different delimiters for each, use `--input-delimiter` and `--output-delimiter`, which override `--delimiter` for the input or output respectively. Each flag takes a single character; the literal two-character string `\t` is interpreted as a tab. For example, to round-trip a tab-separated file: `csv-chef bake -i in.tsv -o out.tsv -r recipe.txt --delimiter '\t'`.
+
 To guard against spreadsheet formula injection, you can provide the `-s` or `--sanitize` flag. When enabled, any output cell that begins with a character a spreadsheet might interpret as a formula (`=`, `+`, `-`, `@`, a tab, or a carriage return) is prefixed with a single quote. This is opt-in; by default output cells are written unchanged.
 
 Please see the recipes section for information about how to build recipes for the program.

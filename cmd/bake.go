@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"unicode/utf8"
 
 	"github.com/dstockto/csv-chef/recipe"
 	"github.com/google/martian/log"
@@ -34,14 +35,43 @@ import (
 )
 
 var (
-	transformLines int
-	disableHeader  bool
-	forceOverwrite bool
-	inputFile      string
-	outputFile     string
-	recipeFile     string
-	sanitize       bool
+	transformLines  int
+	disableHeader   bool
+	forceOverwrite  bool
+	inputFile       string
+	outputFile      string
+	recipeFile      string
+	sanitize        bool
+	delimiter       string
+	inputDelimiter  string
+	outputDelimiter string
 )
+
+// resolveDelimiter converts a delimiter flag string to a rune. The literal
+// two-character string `\t` is interpreted as a tab. Otherwise the string
+// must be exactly one rune. On invalid input the program exits non-zero.
+func resolveDelimiter(name, value string) rune {
+	if value == `\t` {
+		return '\t'
+	}
+	if utf8.RuneCountInString(value) != 1 {
+		log.Errorf("%s must be a single character (or the literal \\t for tab), got %q", name, value)
+		os.Exit(9)
+	}
+	return []rune(value)[0]
+}
+
+// effectiveDelimiter returns the specific override if set, else the shared
+// delimiter if set, else a comma.
+func effectiveDelimiter(name, specific, shared string) rune {
+	if specific != "" {
+		return resolveDelimiter(name, specific)
+	}
+	if shared != "" {
+		return resolveDelimiter("--delimiter", shared)
+	}
+	return ','
+}
 
 // bakeCmd represents the bake command
 var bakeCmd = &cobra.Command{
@@ -127,7 +157,15 @@ func runBake(cmd *cobra.Command, args []string) {
 		transformLines++
 	}
 
-	result, err := transformer.Execute(csv.NewReader(in), csv.NewWriter(out), !disableHeader, transformLines, parseErrIsError)
+	inComma := effectiveDelimiter("--input-delimiter", inputDelimiter, delimiter)
+	outComma := effectiveDelimiter("--output-delimiter", outputDelimiter, delimiter)
+
+	r := csv.NewReader(in)
+	r.Comma = inComma
+	w := csv.NewWriter(out)
+	w.Comma = outComma
+
+	result, err := transformer.Execute(r, w, !disableHeader, transformLines, parseErrIsError)
 	if err != nil {
 		log.Errorf("Error during baking: %v", err)
 		os.Exit(8)
@@ -153,6 +191,9 @@ func init() {
 	bakeCmd.Flags().StringVarP(&recipeFile, "recipe", "r", "", "-r /path/to/recipe.txt")
 	bakeCmd.Flags().BoolP("parseErrorIsError", "p", false, "-p")
 	bakeCmd.Flags().BoolVarP(&sanitize, "sanitize", "s", false, "--sanitize (prefix risky cells with a quote to prevent spreadsheet formula injection)")
+	bakeCmd.Flags().StringVar(&delimiter, "delimiter", "", "field delimiter for both input and output (default ,); use \\t for tab")
+	bakeCmd.Flags().StringVar(&inputDelimiter, "input-delimiter", "", "field delimiter for input only (overrides --delimiter)")
+	bakeCmd.Flags().StringVar(&outputDelimiter, "output-delimiter", "", "field delimiter for output only (overrides --delimiter)")
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// bakeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
