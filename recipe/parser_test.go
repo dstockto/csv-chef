@@ -344,18 +344,18 @@ func TestParse(t *testing.T) {
 		},
 		{
 			name: "function with args feeds to variable",
-			args: args{source: strings.NewReader("$name <- fake(\"name\") # random name goes in")},
+			args: args{source: strings.NewReader("$name <- uppercase(\"name\") # upper-cases the literal")},
 			want: &Transformation{
 				Variables: map[string]Recipe{
 					"$name": {
 						Output: getOutputForVariable("$name"),
 						Pipe: []Operation{
-							getFunction("fake", []Argument{
+							getFunction("uppercase", []Argument{
 								literalArg("name"),
 								placeholderArg(),
 							}),
 						},
-						Comment: "random name goes in",
+						Comment: "upper-cases the literal",
 					},
 				},
 				Columns:       map[int]Recipe{},
@@ -366,7 +366,7 @@ func TestParse(t *testing.T) {
 		},
 		{
 			name: "function with explicit placeholder",
-			args: args{source: strings.NewReader("13 <- fake(?)")},
+			args: args{source: strings.NewReader("13 <- uppercase(?)")},
 			want: &Transformation{
 				Variables: map[string]Recipe{},
 				Columns: map[int]Recipe{
@@ -374,7 +374,7 @@ func TestParse(t *testing.T) {
 						Output: getOutputForColumn("13"),
 						Pipe: []Operation{
 							{
-								Name: "fake",
+								Name: "uppercase",
 								Arguments: []Argument{
 									placeholderArg(),
 								},
@@ -415,7 +415,7 @@ func TestParse(t *testing.T) {
 		},
 		{
 			name: "function with multiple args piped to another",
-			args: args{source: strings.NewReader("$total <- add(2, $apples) -> normalize_date(\"Y-m-d\") #what even is this?")},
+			args: args{source: strings.NewReader("$total <- add(2, $apples) -> readDate(\"Y-m-d\") #what even is this?")},
 			want: &Transformation{
 				Variables: map[string]Recipe{
 					"$total": {
@@ -430,7 +430,7 @@ func TestParse(t *testing.T) {
 								},
 							},
 							{
-								Name: "normalize_date",
+								Name: "readDate",
 								Arguments: []Argument{
 									literalArg("Y-m-d"),
 									placeholderArg(),

@@ -375,7 +375,7 @@ func TestTransformation_AddOperationToColumn(t1 *testing.T) {
 						Output: getOutputForColumn("10"),
 						Pipe: []Operation{
 							{
-								Name: "fake",
+								Name: "uppercase",
 								Arguments: []Argument{
 									literalArg("name"),
 								},

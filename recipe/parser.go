@@ -42,9 +42,6 @@ var allFuncs = map[string][]int{
 	"isfuture":     {3},
 	"power":        {2},
 	"age":          {1},
-
-	"normalize_date": {1, 1},
-	"fake":           {1},
 }
 
 func Parse(source io.Reader) (*Transformation, error) {
