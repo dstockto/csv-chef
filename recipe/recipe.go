@@ -49,6 +49,19 @@ func (a *Argument) GetValue(context LineContext, placeholder string) (string, er
 			return "", fmt.Errorf("column %d referenced, but it does not exist in the input", colNum)
 		}
 		value = colValue
+	case NamedColumn:
+		if context.Names == nil {
+			return "", fmt.Errorf("named column {%s} referenced, but header processing is disabled", a.Value)
+		}
+		colNum, ok := context.Names[a.Value]
+		if !ok {
+			return "", fmt.Errorf("named column {%s} referenced, but no header with that name exists in the input", a.Value)
+		}
+		colValue, ok := context.Columns[colNum]
+		if !ok {
+			return "", fmt.Errorf("named column {%s} resolved to column %d, but it does not exist in the input", a.Value, colNum)
+		}
+		value = colValue
 	case Variable:
 		varValue, ok := context.Variables[a.Value]
 		if !ok {
@@ -178,6 +191,10 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 		return nil, err
 	}
 	var linesRead int
+	// headerNames maps an input header name to its 1-based column number for
+	// {name} references. It is populated from the header row (line 1) when
+	// header processing is enabled, and stays nil otherwise.
+	var headerNames map[string]int
 
 	for lineLimit <= 0 || linesRead < lineLimit {
 		row, err := reader.Read()
@@ -206,6 +223,17 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 		for i, v := range row {
 			context.Columns[i+1] = v
 		}
+
+		// On the header row, capture header name -> column number so that
+		// {name} references can be resolved on this and later rows. A leading
+		// UTF-8 BOM on the first header is stripped so names still match.
+		if processHeader && linesRead == 1 {
+			headerNames = make(map[string]int, len(row))
+			for i, v := range row {
+				headerNames[strings.TrimPrefix(v, "\ufeff")] = i + 1
+			}
+		}
+		context.Names = headerNames
 
 		// process variables
 		for _, v := range t.VariableOrder {
@@ -787,6 +815,10 @@ type LineContext struct {
 	Variables map[string]string
 	Columns   map[int]string
 	LineNo    int
+	// Names maps an input header name to its 1-based column number. It is
+	// populated from the header row when header processing is enabled and is
+	// nil otherwise, in which case named column references error.
+	Names map[string]int
 }
 
 func NewTransformation() *Transformation {
