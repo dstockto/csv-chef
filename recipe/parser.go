@@ -566,8 +566,18 @@ func (s *Scanner) scanLiteral() (Token, string) {
 
 	for {
 		ch := s.read()
+		if ch == eof {
+			// Unterminated literal - hitting EOF before the closing quote.
+			// Signal an error rather than looping forever appending eof.
+			return ILLEGAL, buf.String()
+		}
 		if ch == '\\' {
-			_, _ = buf.WriteRune(s.read())
+			escaped := s.read()
+			if escaped == eof {
+				// Trailing backslash with no following character before EOF.
+				return ILLEGAL, buf.String()
+			}
+			_, _ = buf.WriteRune(escaped)
 		} else if ch != '"' {
 			_, _ = buf.WriteRune(ch)
 		} else {

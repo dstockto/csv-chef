@@ -557,6 +557,24 @@ func TestParse(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 		},
+		{
+			name:    "unterminated literal is an error, not a hang",
+			args:    args{source: strings.NewReader(`1 <- "oops`)},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name:    "unterminated literal after a join is an error, not a hang",
+			args:    args{source: strings.NewReader(`1 <- 2 + "oops`)},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name:    "trailing backslash in literal is an error, not a hang",
+			args:    args{source: strings.NewReader("1 <- \"oops\\")},
+			want:    nil,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
