@@ -27,6 +27,7 @@ var allFuncs = map[string][]int{
 	"onlydigits":   {1},
 	"mod":          {2},
 	"trim":         {1},
+	"trimzeros":    {1},
 	"firstchars":   {1},
 	"lastchars":    {1},
 	"repeat":       {2},
