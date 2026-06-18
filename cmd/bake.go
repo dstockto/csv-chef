@@ -81,7 +81,7 @@ func runBake(cmd *cobra.Command, args []string) {
 
 	// ensure output doesn't exist, or force is specified
 	if _, err := os.Stat(outputFile); err == nil && !forceOverwrite {
-		log.Errorf("Output file already exists: %s", output)
+		log.Errorf("Output file already exists: %s", outputFile)
 		os.Exit(5)
 	}
 
