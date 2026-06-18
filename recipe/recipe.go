@@ -83,6 +83,9 @@ type Transformation struct {
 	Headers       map[int]Recipe
 	VariableOrder []string
 	Sanitize      bool
+	// Strict makes the lenient date-parsing functions (readDate, formatDate)
+	// fail on unparseable input instead of passing the value through.
+	Strict bool
 }
 
 type TransformationResult struct {
@@ -499,7 +502,12 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 			if err != nil {
 				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
 			}
-			result, err := FormatDate(args[0], args[1])
+			// In strict mode, fail on unparseable dates instead of passing through.
+			format := FormatDate
+			if t.Strict {
+				format = FormatDateF
+			}
+			result, err := format(args[0], args[1])
 			if err != nil {
 				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
 			}
@@ -519,7 +527,12 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 			if err != nil {
 				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
 			}
-			result, err := ReadDate(args[0], args[1])
+			// In strict mode, fail on unparseable dates instead of passing through.
+			read := ReadDate
+			if t.Strict {
+				read = ReadDateF
+			}
+			result, err := read(args[0], args[1])
 			if err != nil {
 				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
 			}
