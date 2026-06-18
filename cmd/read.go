@@ -58,6 +58,10 @@ func runRead(cmd *cobra.Command, args []string) {
 		if err == io.EOF {
 			break
 		}
+		if err != nil {
+			log.Errorf("Error reading CSV: %v", err)
+			os.Exit(1)
+		}
 		fmt.Println(line)
 	}
 }
