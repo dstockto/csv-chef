@@ -45,6 +45,7 @@ var (
 	delimiter       string
 	inputDelimiter  string
 	outputDelimiter string
+	strict          bool
 )
 
 // resolveDelimiter converts a delimiter flag string to a rune. The literal
@@ -151,6 +152,7 @@ func runBake(cmd *cobra.Command, args []string) {
 	}
 
 	transformer.Sanitize = sanitize
+	transformer.Strict = strict
 
 	// Don't count the header
 	if transformLines > 0 && !disableHeader {
@@ -191,6 +193,7 @@ func init() {
 	bakeCmd.Flags().StringVarP(&recipeFile, "recipe", "r", "", "-r /path/to/recipe.txt")
 	bakeCmd.Flags().BoolP("parseErrorIsError", "p", false, "-p")
 	bakeCmd.Flags().BoolVarP(&sanitize, "sanitize", "s", false, "--sanitize (prefix risky cells with a quote to prevent spreadsheet formula injection)")
+	bakeCmd.Flags().BoolVar(&strict, "strict", false, "--strict (fail on unparseable dates in readDate/formatDate instead of passing them through)")
 	bakeCmd.Flags().StringVar(&delimiter, "delimiter", "", "field delimiter for both input and output (default ,); use \\t for tab")
 	bakeCmd.Flags().StringVar(&inputDelimiter, "input-delimiter", "", "field delimiter for input only (overrides --delimiter)")
 	bakeCmd.Flags().StringVar(&outputDelimiter, "output-delimiter", "", "field delimiter for output only (overrides --delimiter)")
