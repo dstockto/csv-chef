@@ -259,7 +259,7 @@ func Age(dob string) (string, error) {
 	}
 	// Ignoring the error because SmartDate would have already failed on a bad date
 	birthdate, _ := time.Parse(time.RFC3339, normalizedDate)
-	now := time.Now()
+	now := Now()
 	years := now.Year() - birthdate.Year()
 	if now.YearDay() < birthdate.YearDay() {
 		years--

@@ -710,7 +710,10 @@ func TestTransformation_ParseExecute(t *testing.T) {
 			name:   "age function calculates an age based on a provided dob field",
 			recipe: "1 <- age(1)",
 			input:  "1977-11-07\n2004-02-03\n",
-			want:   "44\n18\n",
+			// Now is pinned to 2021-08-30 (see the Now override below): the
+			// 1977-11-07 birthday has not yet occurred in 2021 (age 43), while
+			// 2004-02-03 already has (age 17).
+			want: "43\n17\n",
 		},
 	}
 
