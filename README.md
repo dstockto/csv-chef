@@ -22,6 +22,8 @@ By default `csv-chef` reads and writes comma-delimited files. You can change the
 
 To guard against spreadsheet formula injection, you can provide the `-s` or `--sanitize` flag. When enabled, any output cell that begins with a character a spreadsheet might interpret as a formula (`=`, `+`, `-`, `@`, a tab, or a carriage return) is prefixed with a single quote. This is opt-in; by default output cells are written unchanged.
 
+The `--strict` flag makes the lenient date functions fail instead of silently passing input through. Normally `readDate` and `formatDate` return their input unchanged when it does not match the given format; with `--strict` they behave like `readDateF`/`formatDateF` and stop processing with an error. This is opt-in; by default these functions remain lenient. (The conditional functions such as `change` and `ifEmpty` are unaffected — passing a value through is their defined behavior, not a silent failure.)
+
 Please see the recipes section for information about how to build recipes for the program.
 
 Write
