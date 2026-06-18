@@ -348,6 +348,132 @@ func MassProcess(incoming []string, processor Processor) (out []string) {
 	return
 }
 
+func Coalesce(a string, b string) (string, error) {
+	if a != "" {
+		return a, nil
+	}
+	return b, nil
+}
+
+func Nth(delimiter string, index string, input string) (string, error) {
+	if delimiter == "" {
+		return "", errors.New("delimiter must not be empty")
+	}
+	idx, err := strconv.Atoi(index)
+	if err != nil {
+		return "", fmt.Errorf("index is not an integer: got '%s'", index)
+	}
+	if idx < 1 {
+		return "", fmt.Errorf("index must be >= 1: got '%d'", idx)
+	}
+
+	fields := strings.Split(input, delimiter)
+	if idx > len(fields) {
+		return "", nil
+	}
+	return fields[idx-1], nil
+}
+
+func PadLeft(width string, pad string, input string) (string, error) {
+	w, err := strconv.Atoi(width)
+	if err != nil {
+		return "", fmt.Errorf("width is not an integer: got '%s'", width)
+	}
+	if w < 0 {
+		return "", fmt.Errorf("width must be non-negative: got '%d'", w)
+	}
+	if pad == "" {
+		return "", errors.New("pad must not be empty")
+	}
+
+	r := []rune(input)
+	if len(r) >= w {
+		return input, nil
+	}
+
+	padRunes := []rune(pad)
+	var prefix []rune
+	for len(prefix)+len(r) < w {
+		prefix = append(prefix, padRunes...)
+	}
+	combined := append(prefix, r...)
+	// Trim from the left so the result is exactly w runes
+	return string(combined[len(combined)-w:]), nil
+}
+
+func PadRight(width string, pad string, input string) (string, error) {
+	w, err := strconv.Atoi(width)
+	if err != nil {
+		return "", fmt.Errorf("width is not an integer: got '%s'", width)
+	}
+	if w < 0 {
+		return "", fmt.Errorf("width must be non-negative: got '%d'", w)
+	}
+	if pad == "" {
+		return "", errors.New("pad must not be empty")
+	}
+
+	r := []rune(input)
+	if len(r) >= w {
+		return input, nil
+	}
+
+	padRunes := []rune(pad)
+	combined := append([]rune{}, r...)
+	for len(combined) < w {
+		combined = append(combined, padRunes...)
+	}
+	// Trim the overflow from the right so the result is exactly w runes
+	return string(combined[:w]), nil
+}
+
+func TitleCase(input string) (string, error) {
+	words := strings.Fields(input)
+	for i, word := range words {
+		r := []rune(word)
+		first := strings.ToUpper(string(r[0]))
+		rest := strings.ToLower(string(r[1:]))
+		words[i] = first + rest
+	}
+	return strings.Join(words, " "), nil
+}
+
+func RegexReplace(pattern string, replacement string, input string) (string, error) {
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return "", fmt.Errorf("invalid regular expression '%s': %v", pattern, err)
+	}
+	return re.ReplaceAllString(input, replacement), nil
+}
+
+func Substring(start string, length string, input string) (string, error) {
+	startNum, err := strconv.Atoi(start)
+	if err != nil {
+		return "", fmt.Errorf("start is not an integer: got '%s'", start)
+	}
+	if startNum < 1 {
+		return "", fmt.Errorf("start must be >= 1: got '%d'", startNum)
+	}
+	lengthNum, err := strconv.Atoi(length)
+	if err != nil {
+		return "", fmt.Errorf("length is not an integer: got '%s'", length)
+	}
+	if lengthNum < 0 {
+		return "", fmt.Errorf("length must be non-negative: got '%d'", lengthNum)
+	}
+
+	r := []rune(input)
+	startIdx := startNum - 1
+	if startIdx >= len(r) {
+		return "", nil
+	}
+	end := startIdx + lengthNum
+	if end > len(r) {
+		end = len(r)
+	}
+	return string(r[startIdx:end]), nil
+}
+
 // SanitizeField guards against CSV formula injection by prefixing a
 // single quote to any value that begins with a character a spreadsheet
 // may interpret as a formula.
