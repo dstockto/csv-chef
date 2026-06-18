@@ -82,6 +82,7 @@ type Transformation struct {
 	Columns       map[int]Recipe
 	Headers       map[int]Recipe
 	VariableOrder []string
+	Sanitize      bool
 }
 
 type TransformationResult struct {
@@ -287,7 +288,11 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 func (t *Transformation) outputCsvRow(numColumns int, output map[int]string, writer *csv.Writer) error {
 	var outputRow []string
 	for i := 1; i <= numColumns; i++ {
-		outputRow = append(outputRow, output[i])
+		cell := output[i]
+		if t.Sanitize {
+			cell = SanitizeField(cell)
+		}
+		outputRow = append(outputRow, cell)
 	}
 	err := writer.Write(outputRow)
 	if err != nil {
