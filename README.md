@@ -61,6 +61,22 @@ $ csv-chef identity -w input.csv
 10 <- 10 # sent
 ```
 
+Lint
+==
+
+The `lint` command parses and validates a recipe without transforming any data. It is a quick dry-run that catches problems before you bake. Use `-r` or `--recipe` to specify the recipe file (required). Lint reports parse errors (such as unknown functions, unterminated literals or incorrect argument counts) as well as recipe validation errors (such as missing column definitions).
+
+If you also provide an input CSV with `-i` or `--in`, lint reads the header row and verifies that the recipe does not reference an input column number greater than the number of columns in that header. This catches recipes that would fail against a particular input file.
+
+On success it prints `Recipe OK` and exits 0. On any problem it prints a description of the issue and exits with a non-zero status.
+
+Example:
+
+```
+$ csv-chef lint -r recipe.txt -i input.csv
+Recipe OK
+```
+
 Recipes
 ==
 
