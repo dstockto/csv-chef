@@ -93,6 +93,8 @@ how they can be defined.
 
 Columns consist of only digits. If you see a number by itself, it's a column reference.
 
+You can also reference an input column by its header name instead of its number by wrapping the name in braces, like `{first_name}`. The name is matched against the input file's header row, so this only works when header processing is enabled (it is by default; it is unavailable when you pass `--no-header`/`-d`). A named reference can be used anywhere a numeric column reference can, including as a function argument, for example `1 <- {birthdate} -> age` or `2 <- uppercase({last_name})`. If the name is not found in the header (or headers are disabled), processing stops with an error. Named references are read-only inputs; assignment targets on the left of `<-` are still numeric columns, headers (`!2`), or variables.
+
 Headers are an exclamation point followed by a column number with no spaces, like `!2`. If you want to add a column
 header for an inserted column, these can be useful. You could also use them to change existing headers. You can use all
 the features of a recipe when defining a header, but remember, for transformations, it will run against existing

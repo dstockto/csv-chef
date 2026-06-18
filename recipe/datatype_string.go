@@ -13,11 +13,12 @@ func _() {
 	_ = x[Literal-2]
 	_ = x[Placeholder-3]
 	_ = x[Header-4]
+	_ = x[NamedColumn-5]
 }
 
-const _DataType_name = "ColumnVariableLiteralPlaceholderHeader"
+const _DataType_name = "ColumnVariableLiteralPlaceholderHeaderNamedColumn"
 
-var _DataType_index = [...]uint8{0, 6, 14, 21, 32, 38}
+var _DataType_index = [...]uint8{0, 6, 14, 21, 32, 38, 49}
 
 func (i DataType) String() string {
 	if i < 0 || i >= DataType(len(_DataType_index)-1) {

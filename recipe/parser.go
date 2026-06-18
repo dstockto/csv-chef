@@ -118,6 +118,8 @@ func Parse(source io.Reader) (*Transformation, error) {
 		switch tok {
 		case COLUMN_ID:
 			transformation.AddOperationByType(targetType, target, getColumn(lit))
+		case NAMED_COLUMN:
+			transformation.AddOperationByType(targetType, target, getNamedColumn(lit))
 		case LITERAL:
 			transformation.AddOperationByType(targetType, target, getLiteral(lit))
 		case VARIABLE:
@@ -172,6 +174,8 @@ func Parse(source io.Reader) (*Transformation, error) {
 			switch tok {
 			case COLUMN_ID:
 				transformation.AddOperationByType(targetType, target, getColumn(lit))
+			case NAMED_COLUMN:
+				transformation.AddOperationByType(targetType, target, getNamedColumn(lit))
 			case VARIABLE:
 				transformation.AddOperationByType(targetType, target, getVariable(lit))
 			case LITERAL:
@@ -211,6 +215,15 @@ func getColumn(lit string) Operation {
 		},
 	}
 	return op
+}
+
+func getNamedColumn(lit string) Operation {
+	return Operation{
+		Name: "value",
+		Arguments: []Argument{
+			namedColumnArg(lit),
+		},
+	}
 }
 
 func getPlaceholder() Operation {
@@ -321,6 +334,8 @@ ARGLOOP:
 			args = append(args, placeholderArg())
 		case COLUMN_ID:
 			args = append(args, columnArg(lit))
+		case NAMED_COLUMN:
+			args = append(args, namedColumnArg(lit))
 		case VARIABLE:
 			args = append(args, variableArg(lit))
 		case COMMA:
@@ -345,6 +360,13 @@ ARGLOOP:
 func variableArg(lit string) Argument {
 	return Argument{
 		Type:  Variable,
+		Value: lit,
+	}
+}
+
+func namedColumnArg(lit string) Argument {
+	return Argument{
+		Type:  NamedColumn,
 		Value: lit,
 	}
 }
@@ -448,6 +470,9 @@ func (s *Scanner) Scan() (tok Token, lit string) {
 	} else if ch == '!' {
 		_, lit := s.scanColumn()
 		return HEADER, lit
+	} else if ch == '{' {
+		s.unread()
+		return s.scanNamedColumn()
 	} else if ch == '#' {
 		return s.scanComment()
 	}
@@ -592,6 +617,29 @@ func (s *Scanner) scanLiteral() (Token, string) {
 	}
 
 	return LITERAL, buf.String()
+}
+
+// scanNamedColumn scans a header-name column reference delimited by braces,
+// for example {first_name}. The name is resolved to a column number at
+// execution time against the input header row.
+func (s *Scanner) scanNamedColumn() (Token, string) {
+	var buf bytes.Buffer
+
+	s.read() // eat the leading {
+
+	for {
+		ch := s.read()
+		if ch == eof {
+			// Unterminated named column reference - missing closing brace.
+			return ILLEGAL, buf.String()
+		}
+		if ch == '}' {
+			break
+		}
+		_, _ = buf.WriteRune(ch)
+	}
+
+	return NAMED_COLUMN, strings.TrimSpace(buf.String())
 }
 
 func (s *Scanner) scanVariable() (Token, string) {
