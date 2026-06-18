@@ -443,6 +443,16 @@ func (t *Transformation) processRecipe(recipeType string, variable Recipe, conte
 			}
 			result, _ := Trim(args[0])
 			value = result
+		case "trimzeros":
+			args, err := processArgs(1, o.Arguments, context, placeholder)
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): error evaluating arg: %v", errorPrefix, opName, err)
+			}
+			result, err := TrimZeros(args[0])
+			if err != nil {
+				return "", fmt.Errorf("%s %s(): %v", errorPrefix, opName, err)
+			}
+			value = result
 		case "firstchars":
 			args, err := processArgs(2, o.Arguments, context, placeholder)
 			if err != nil {

@@ -142,6 +142,14 @@ func Trim(input string) (string, error) {
 	return strings.TrimSpace(input), nil
 }
 
+func TrimZeros(input string) (string, error) {
+	f, err := strconv.ParseFloat(input, 64)
+	if err != nil {
+		return "", fmt.Errorf("trimZeros: input is not numeric: got '%s'", input)
+	}
+	return strconv.FormatFloat(f, 'f', -1, 64), nil
+}
+
 func Repeat(count string, input string) (string, error) {
 	num, err := strconv.Atoi(count)
 	if err != nil {

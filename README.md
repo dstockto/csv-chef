@@ -241,6 +241,7 @@ I'll indicate that with empty parens. You can leave those off too. Functions are
 * multiply(?, ?) - returns the product of the two provided numerical values. If either are not numerical, an error will occur.
 * divide(?, ?) - provides the result of first value divided by the second. They should of course be numbers, and the second value should not be zero unless you want to cause damage to the space-time continuum.
 * numberFormat(digits, ?) - run this after add, subtract, multiply or divide to trim decimals. The `digits` parameter is how many digits after the decimal you want to keep.
+* trimZeros(?) - parses the input as a number and returns it with the fewest digits needed, dropping trailing zeros (and the decimal point if not needed). Run it after a math function to get clean output, e.g. `1 <- add(2, 3) -> trimZeros` yields `5` instead of `5.000000`, and `add(2, 3.5) -> trimZeros` yields `5.5`. A non-numeric input returns an error.
 * lineno() - this function returns the current line number
 * mod(x, y) - returns the remainder of dividing x by y. Both arguments need to be integers. If they are not, an error will happen. If y is zero, an error will be returned.
 * trim(?) - returns the argument with any leading or trailing white-space removed

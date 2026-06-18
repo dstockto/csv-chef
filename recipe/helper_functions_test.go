@@ -367,3 +367,29 @@ func TestSubstring(t *testing.T) {
 		})
 	}
 }
+
+func TestTrimZeros(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   string
+		want    string
+		wantErr bool
+	}{
+		{name: "integer-valued float", input: "5.000000", want: "5"},
+		{name: "fractional", input: "5.500000", want: "5.5"},
+		{name: "plain decimal", input: "0.1", want: "0.1"},
+		{name: "plain integer", input: "42", want: "42"},
+		{name: "non-numeric", input: "abc", wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := TrimZeros(tt.input)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("TrimZeros() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if !tt.wantErr && got != tt.want {
+				t.Errorf("TrimZeros(%q) = %q, want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+}
