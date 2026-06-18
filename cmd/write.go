@@ -27,6 +27,7 @@ import (
 	"github.com/google/martian/log"
 	"github.com/spf13/cobra"
 	"math/rand"
+	"os"
 	"syreclabs.com/go/faker"
 	"time"
 )
@@ -49,11 +50,11 @@ var lines int
 
 func runWrite(cmd *cobra.Command, args []string) {
 	output, closeFunc, err := csv.NewOutputSource(args[0])
-	defer closeFunc()
-
 	if err != nil {
 		log.Errorf("%+v", err)
+		os.Exit(1)
 	}
+	defer closeFunc()
 
 	output.Write([]string{
 		"voter_id",
