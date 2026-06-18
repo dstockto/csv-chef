@@ -78,7 +78,7 @@ func runBake(cmd *cobra.Command, args []string) {
 		log.Errorf("Error opening input file: %v", err)
 		os.Exit(1)
 	}
-	defer in.Close()
+	defer func() { _ = in.Close() }()
 
 	// ensure output doesn't exist, or force is specified
 	if _, err := os.Stat(outputFile); err == nil && !forceOverwrite {
@@ -91,14 +91,14 @@ func runBake(cmd *cobra.Command, args []string) {
 		log.Errorf("Error creating output file: %v", err)
 		os.Exit(6)
 	}
-	defer out.Close()
+	defer func() { _ = out.Close() }()
 
 	recipeFile, err := os.Open(recipeFile)
 	if err != nil {
 		log.Errorf("Unable to open recipe file: %v", err)
 		os.Exit(6)
 	}
-	defer recipeFile.Close()
+	defer func() { _ = recipeFile.Close() }()
 
 	transformer, err := recipe.Parse(recipeFile)
 	if err != nil {

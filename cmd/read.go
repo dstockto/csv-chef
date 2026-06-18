@@ -51,7 +51,7 @@ func runRead(cmd *cobra.Command, args []string) {
 		log.Errorf("%+v", err)
 		os.Exit(1)
 	}
-	defer closeFunc()
+	defer func() { _ = closeFunc() }()
 
 	for {
 		line, err := csvFile.Read()

@@ -143,7 +143,7 @@ func TestTransformation_AddOutputToVariable(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := NewTransformation()
-			t.AddOutputToVariable(tt.variable)
+			_ = t.AddOutputToVariable(tt.variable)
 			got := t.Variables[tt.variable].Output
 			if got != tt.want {
 				t1.Errorf("Dump() = %v, want %v", got, tt.want)
@@ -172,7 +172,7 @@ func TestTransformation_AddOutputToHeader(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := NewTransformation()
-			t.AddOutputToHeader(tt.header)
+			_ = t.AddOutputToHeader(tt.header)
 			got := t.Headers[tt.headerNum].Output
 			if got != tt.want {
 				t1.Errorf("Dump() = %v, want %v", got, tt.want)
@@ -201,7 +201,7 @@ func TestTransformation_AddOutputToColumn(t1 *testing.T) {
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
 			t := NewTransformation()
-			t.AddOutputToColumn(tt.column)
+			_ = t.AddOutputToColumn(tt.column)
 
 			got := t.Columns[tt.columnNum].Output
 			if got != tt.want {

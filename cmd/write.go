@@ -54,9 +54,9 @@ func runWrite(cmd *cobra.Command, args []string) {
 		log.Errorf("%+v", err)
 		os.Exit(1)
 	}
-	defer closeFunc()
+	defer func() { _ = closeFunc() }()
 
-	output.Write([]string{
+	_ = output.Write([]string{
 		"voter_id",
 		"first",
 		"last",
@@ -76,7 +76,7 @@ func runWrite(cmd *cobra.Command, args []string) {
 			sent = faker.Date().Between(time.Now().AddDate(0, 0, -10), time.Now().AddDate(0, 0, 10)).Format("2006-01-02")
 		}
 
-		output.Write([]string{
+		_ = output.Write([]string{
 			faker.Number().Between(100000, 99999999),
 			faker.Name().FirstName(),
 			faker.Name().LastName(),

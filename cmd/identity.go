@@ -89,7 +89,7 @@ func runIdentity(cmd *cobra.Command, args []string) {
 			log.Errorf("Unable to open output file: %v", err)
 			os.Exit(1)
 		}
-		defer f.Close()
+		defer func() { _ = f.Close() }()
 		w = f
 	} else {
 		w = os.Stdout
@@ -98,9 +98,11 @@ func runIdentity(cmd *cobra.Command, args []string) {
 	for zeroIndex, column := range row {
 		num := zeroIndex + 1
 		if withHeaders {
-			_, err = fmt.Fprintf(w, "!%d <- %d # %s header\n", num, num, trimBom(column))
-			_, err = fmt.Fprintf(w, "%d <- %d # %s\n", num, num, trimBom(column))
-			if err != nil {
+			if _, err = fmt.Fprintf(w, "!%d <- %d # %s header\n", num, num, trimBom(column)); err != nil {
+				log.Errorf("Error writing header recipe: %v", err)
+				os.Exit(10)
+			}
+			if _, err = fmt.Fprintf(w, "%d <- %d # %s\n", num, num, trimBom(column)); err != nil {
 				log.Errorf("Error writing header recipe: %v", err)
 				os.Exit(10)
 			}

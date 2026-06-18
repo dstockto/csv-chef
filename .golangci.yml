@@ -1,0 +1,8 @@
+version: "2"
+
+# Use golangci-lint's standard linter set: errcheck, govet, ineffassign,
+# staticcheck, and unused. These catch real correctness issues (unchecked
+# errors, ineffectual assignments, suspicious constructs) without a lot of
+# stylistic noise.
+linters:
+  default: standard
