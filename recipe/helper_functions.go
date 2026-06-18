@@ -341,3 +341,17 @@ func MassProcess(incoming []string, processor Processor) (out []string) {
 	}
 	return
 }
+
+// SanitizeField guards against CSV formula injection by prefixing a
+// single quote to any value that begins with a character a spreadsheet
+// may interpret as a formula.
+func SanitizeField(s string) string {
+	if s == "" {
+		return s
+	}
+	switch s[0] {
+	case '=', '+', '-', '@', '\t', '\r':
+		return "'" + s
+	}
+	return s
+}

@@ -133,3 +133,28 @@ func TestNoDigits(t *testing.T) {
 		})
 	}
 }
+
+func TestSanitizeField(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{"leading equals", "=1+1", "'=1+1"},
+		{"leading plus", "+1", "'+1"},
+		{"leading minus", "-1", "'-1"},
+		{"leading at", "@SUM(A1)", "'@SUM(A1)"},
+		{"leading tab", "\tvalue", "'\tvalue"},
+		{"leading carriage return", "\rvalue", "'\rvalue"},
+		{"normal text", "hello", "hello"},
+		{"empty string", "", ""},
+		{"equals not at start", "a=b", "a=b"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := SanitizeField(tt.input); got != tt.want {
+				t.Errorf("SanitizeField(%q) = %q, want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+}

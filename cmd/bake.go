@@ -38,6 +38,7 @@ var (
 	inputFile      string
 	outputFile     string
 	recipeFile     string
+	sanitize       bool
 )
 
 // bakeCmd represents the bake command
@@ -105,6 +106,8 @@ func runBake(cmd *cobra.Command, args []string) {
 		os.Exit(7)
 	}
 
+	transformer.Sanitize = sanitize
+
 	// Don't count the header
 	if transformLines > 0 && !disableHeader {
 		transformLines++
@@ -135,6 +138,7 @@ func init() {
 	bakeCmd.Flags().StringVarP(&outputFile, "out", "o", "", "-o /path/to/output.csv")
 	bakeCmd.Flags().StringVarP(&recipeFile, "recipe", "r", "", "-r /path/to/recipe.txt")
 	bakeCmd.Flags().BoolP("parseErrorIsError", "p", false, "-p")
+	bakeCmd.Flags().BoolVarP(&sanitize, "sanitize", "s", false, "--sanitize (prefix risky cells with a quote to prevent spreadsheet formula injection)")
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// bakeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
