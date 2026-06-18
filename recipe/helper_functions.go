@@ -155,7 +155,7 @@ func Repeat(count string, input string) (string, error) {
 }
 
 func ReplaceString(search string, replace string, input string) (string, error) {
-	return strings.Replace(input, search, replace, -1), nil
+	return strings.ReplaceAll(input, search, replace), nil
 }
 
 func Today(now func() time.Time) (string, error) {
@@ -219,6 +219,9 @@ func IsPast(past string, future string, date string) (string, error) {
 		return "", fmt.Errorf("unable to recognize date: %v", err)
 	}
 	actualDate, err := time.Parse(time.RFC3339, normalizedDate)
+	if err != nil {
+		return "", fmt.Errorf("unable to parse date: %v", err)
+	}
 	now := Now()
 	if now.After(actualDate) {
 		return past, nil
@@ -232,6 +235,9 @@ func IsFuture(future string, past string, date string) (string, error) {
 		return "", fmt.Errorf("unable to recognize date: %v", err)
 	}
 	actualDate, err := time.Parse(time.RFC3339, normalizedDate)
+	if err != nil {
+		return "", fmt.Errorf("unable to parse date: %v", err)
+	}
 	now := Now()
 	if now.Before(actualDate) {
 		return future, nil
@@ -322,7 +328,7 @@ func Change(from string, to string, input string) (string, error) {
 }
 
 func ChangeI(from string, to string, input string) (string, error) {
-	if strings.ToLower(input) == strings.ToLower(from) {
+	if strings.EqualFold(input, from) {
 		return to, nil
 	}
 	return input, nil

@@ -81,20 +81,21 @@ func Parse(source io.Reader) (*Transformation, error) {
 		// Found column or variable to assign result to
 		target := lit
 		var targetType DataType
-		if tok == COLUMN_ID {
+		switch tok {
+		case COLUMN_ID:
 			err := transformation.AddOutputToColumn(lit)
 			if err != nil {
 				return nil, fmt.Errorf("error - line %d: %s", lineNo+1, err.Error())
 			}
 			targetType = Column
-		} else if tok == VARIABLE {
+		case VARIABLE:
 			err := transformation.AddOutputToVariable(lit)
 			if err != nil {
 				return nil, fmt.Errorf("error - line %d: %s", lineNo+1, err.Error())
 			}
 			transformation.VariableOrder = append(transformation.VariableOrder, lit)
 			targetType = Variable
-		} else if tok == HEADER {
+		case HEADER:
 			err := transformation.AddOutputToHeader(lit)
 			if err != nil {
 				return nil, fmt.Errorf("error - line %d: %s", lineNo+1, err.Error())
@@ -124,7 +125,7 @@ func Parse(source io.Reader) (*Transformation, error) {
 			}
 			transformation.AddOperationByType(targetType, target, operation)
 		default:
-			return nil, fmt.Errorf("unexpected token [%d] %s\n", tok, lit)
+			return nil, fmt.Errorf("unexpected token [%d] %s", tok, lit)
 		}
 
 	LOOPSCAN:
@@ -134,7 +135,7 @@ func Parse(source io.Reader) (*Transformation, error) {
 			case EOF:
 				break LOOPSCAN
 			case PIPE:
-				break
+				// a pipe just connects to the next operand scanned below
 			case PLUS:
 				transformation.AddOperationByType(targetType, target, getJoinWithPlaceholder())
 			case COMMENT:
@@ -157,7 +158,7 @@ func Parse(source io.Reader) (*Transformation, error) {
 				}
 				break LOOPSCAN
 			default:
-				break
+				// any other connector token falls through to scan the next operand
 			}
 
 			// After connection scan stuff we can do (column, variable, literal, function)
@@ -265,7 +266,7 @@ func getOutputForHeader(h string) Output {
 func consumeAssignment(p *Parser) error {
 	tok, lit := p.scanIgnoreWhitespace()
 	if tok != ASSIGNMENT {
-		return fmt.Errorf("expected assignment ( <- ) but found [%s] (%d) instead.\n", lit, tok)
+		return fmt.Errorf("expected assignment ( <- ) but found [%s] (%d) instead", lit, tok)
 	}
 	return nil
 }
@@ -318,7 +319,7 @@ ARGLOOP:
 		case VARIABLE:
 			args = append(args, variableArg(lit))
 		case COMMA:
-			break
+			// commas just separate arguments; keep scanning
 		case CLOSE_PAREN:
 			break ARGLOOP
 		default:

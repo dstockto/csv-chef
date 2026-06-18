@@ -179,10 +179,7 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 	}
 	var linesRead int
 
-	for {
-		if lineLimit > 0 && linesRead >= lineLimit {
-			break
-		}
+	for lineLimit <= 0 || linesRead < lineLimit {
 		row, err := reader.Read()
 		if err == io.EOF {
 			break
@@ -623,7 +620,8 @@ func getPlaceholderArg() Argument {
 func (t *Transformation) AddOperationToVariable(variable string, operation Operation) {
 	recipe, ok := t.Variables[variable]
 	if !ok {
-		t.AddOutputToVariable(variable)
+		// safe to ignore: the error only occurs if already defined, but !ok
+		_ = t.AddOutputToVariable(variable)
 		recipe = t.Variables[variable]
 	}
 	pipe := recipe.Pipe
@@ -639,7 +637,8 @@ func (t *Transformation) AddOperationToColumn(column string, operation Operation
 	columnNumber, _ := strconv.Atoi(column)
 	recipe, ok := t.Columns[columnNumber]
 	if !ok {
-		t.AddOutputToColumn(column)
+		// safe to ignore: the error only occurs if already defined, but !ok
+		_ = t.AddOutputToColumn(column)
 		recipe = t.Columns[columnNumber]
 	}
 	pipe := recipe.Pipe
@@ -655,7 +654,8 @@ func (t *Transformation) AddOperationToHeader(header string, operation Operation
 	headerNumber, _ := strconv.Atoi(header)
 	recipe, ok := t.Headers[headerNumber]
 	if !ok {
-		t.AddOutputToHeader(header)
+		// safe to ignore: the error only occurs if already defined, but !ok
+		_ = t.AddOutputToHeader(header)
 		recipe = t.Headers[headerNumber]
 	}
 	pipe := recipe.Pipe
