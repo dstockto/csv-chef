@@ -78,3 +78,102 @@ func TestNamedColumn_RequiresHeaderProcessing(t *testing.T) {
 		t.Errorf("error %q should explain that headers are required", err.Error())
 	}
 }
+
+func TestNamedColumn_StripsBOMFromHeader(t *testing.T) {
+	got, err := runBake(t, "1 <- {first}", "\ufefffirst,last\nAda,Lovelace\n", true)
+	if err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	// The header row passes through untouched (BOM intact); {first} still
+	// resolves because the lookup key is BOM-stripped.
+	want := "\ufefffirst\nAda\n"
+	if got != want {
+		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
+func TestNamedColumn_TrimsWhitespaceOnBothSides(t *testing.T) {
+	// The header cell has a trailing space and the reference has padding
+	// inside the braces; both are trimmed before matching.
+	got, err := runBake(t, "1 <- { last }", "first,last \nAda,Lovelace\n", true)
+	if err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	want := "first\nLovelace\n"
+	if got != want {
+		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
+func TestNamedColumn_InVariableRecipe(t *testing.T) {
+	got, err := runBake(t, "$v <- {first}\n1 <- $v", "first,last\nAda,Lovelace\n", true)
+	if err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	want := "first\nAda\n"
+	if got != want {
+		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
+func TestNamedColumn_InHeaderRecipe(t *testing.T) {
+	got, err := runBake(t, "1 <- 1\n!1 <- uppercase({first})", "first,last\nada,lovelace\n", true)
+	if err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	want := "FIRST\nada\n"
+	if got != want {
+		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
+func TestNamedColumn_DuplicateHeaderLastWins(t *testing.T) {
+	got, err := runBake(t, "1 <- {name}", "name,name\nleft,right\n", true)
+	if err != nil {
+		t.Fatalf("execute: %v", err)
+	}
+	want := "name\nright\n"
+	if got != want {
+		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
+func TestParse_UnterminatedNamedColumn(t *testing.T) {
+	_, err := Parse(strings.NewReader("1 <- {oops"))
+	if err == nil {
+		t.Fatalf("expected a parse error for an unterminated named column, got none")
+	}
+	if !strings.Contains(err.Error(), "{oops") {
+		t.Errorf("error %q should mention the unterminated reference", err.Error())
+	}
+}
+
+func TestParse_UnterminatedNamedColumnAfterPipe(t *testing.T) {
+	_, err := Parse(strings.NewReader("1 <- 2 -> {oops"))
+	if err == nil {
+		t.Fatalf("expected a parse error for an unterminated named column, got none")
+	}
+	if !strings.Contains(err.Error(), "{oops") {
+		t.Errorf("error %q should mention the unterminated reference", err.Error())
+	}
+}
+
+func TestParse_EmptyNamedColumn(t *testing.T) {
+	_, err := Parse(strings.NewReader("1 <- {}"))
+	if err == nil {
+		t.Fatalf("expected a parse error for an empty named column, got none")
+	}
+	if !strings.Contains(err.Error(), "{}") {
+		t.Errorf("error %q should mention the empty reference", err.Error())
+	}
+}
+
+func TestParse_NamedColumnAsTargetRejected(t *testing.T) {
+	_, err := Parse(strings.NewReader("{name} <- 1"))
+	if err == nil {
+		t.Fatalf("expected a parse error for a named column assignment target, got none")
+	}
+	if !strings.Contains(err.Error(), "expected column, header or variable") {
+		t.Errorf("error %q should reject the named column target", err.Error())
+	}
+}

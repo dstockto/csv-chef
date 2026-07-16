@@ -62,3 +62,58 @@ func TestMaxInputColumnReferenced(t *testing.T) {
 		})
 	}
 }
+
+func TestNamedColumnsReferenced(t *testing.T) {
+	tests := []struct {
+		name           string
+		transformation *Transformation
+		want           []string
+	}{
+		{
+			name:           "no named references returns empty",
+			transformation: NewTransformation(),
+			want:           []string{},
+		},
+		{
+			name: "collects unique names across recipes sorted",
+			transformation: func() *Transformation {
+				tr := NewTransformation()
+				tr.AddOperationToColumn("1", Operation{
+					Name:      "value",
+					Arguments: []Argument{{Type: NamedColumn, Value: "zip"}},
+				})
+				tr.AddOperationToColumn("2", Operation{
+					Name: "join",
+					Arguments: []Argument{
+						{Type: NamedColumn, Value: "city"},
+						{Type: Column, Value: "3"},
+					},
+				})
+				tr.AddOperationToVariable("foo", Operation{
+					Name:      "value",
+					Arguments: []Argument{{Type: NamedColumn, Value: "zip"}},
+				})
+				tr.AddOperationToHeader("1", Operation{
+					Name:      "value",
+					Arguments: []Argument{{Type: NamedColumn, Value: "state"}},
+				})
+				return tr
+			}(),
+			want: []string{"city", "state", "zip"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.transformation.NamedColumnsReferenced()
+			if len(got) != len(tt.want) {
+				t.Fatalf("NamedColumnsReferenced() = %v, want %v", got, tt.want)
+			}
+			for i := range got {
+				if got[i] != tt.want[i] {
+					t.Fatalf("NamedColumnsReferenced() = %v, want %v", got, tt.want)
+				}
+			}
+		})
+	}
+}
