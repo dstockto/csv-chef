@@ -131,6 +131,8 @@ func Parse(source io.Reader) (*Transformation, error) {
 				return nil, err
 			}
 			transformation.AddOperationByType(targetType, target, operation)
+		case ILLEGAL:
+			return nil, fmt.Errorf("illegal or unterminated token '%s' on line %d", lit, lineNo+1)
 		default:
 			return nil, fmt.Errorf("unexpected token [%d] %s", tok, lit)
 		}
@@ -164,6 +166,8 @@ func Parse(source io.Reader) (*Transformation, error) {
 					transformation.Headers[headerNum] = recipe
 				}
 				break LOOPSCAN
+			case ILLEGAL:
+				return nil, fmt.Errorf("illegal or unterminated token '%s' on line %d", lit, lineNo+1)
 			default:
 				// any other connector token falls through to scan the next operand
 			}
@@ -189,6 +193,8 @@ func Parse(source io.Reader) (*Transformation, error) {
 				transformation.AddOperationByType(targetType, target, operation)
 			case PLACEHOLDER:
 				transformation.AddOperationByType(targetType, target, getPlaceholder())
+			case ILLEGAL:
+				return nil, fmt.Errorf("illegal or unterminated token '%s' on line %d", lit, lineNo+1)
 			default:
 				return nil, fmt.Errorf("unexpected token [%d]-'%s' in parse loop", tok, lit)
 			}
@@ -631,7 +637,7 @@ func (s *Scanner) scanNamedColumn() (Token, string) {
 		ch := s.read()
 		if ch == eof {
 			// Unterminated named column reference - missing closing brace.
-			return ILLEGAL, buf.String()
+			return ILLEGAL, "{" + buf.String()
 		}
 		if ch == '}' {
 			break
@@ -639,7 +645,13 @@ func (s *Scanner) scanNamedColumn() (Token, string) {
 		_, _ = buf.WriteRune(ch)
 	}
 
-	return NAMED_COLUMN, strings.TrimSpace(buf.String())
+	name := strings.TrimSpace(buf.String())
+	if name == "" {
+		// A named column reference needs a name between the braces.
+		return ILLEGAL, "{" + buf.String() + "}"
+	}
+
+	return NAMED_COLUMN, name
 }
 
 func (s *Scanner) scanVariable() (Token, string) {

@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/dstockto/csv-chef/recipe"
 	"github.com/google/martian/log"
@@ -46,7 +47,8 @@ reports parse errors (such as unknown functions, unterminated literals or
 incorrect argument counts) and recipe validation errors (such as missing
 column definitions). If an input CSV is provided with -i, lint also checks
 that the recipe does not reference an input column number greater than the
-number of columns in the input file's header row.`,
+number of columns in the input file's header row, and that every named
+column reference like {first_name} exists in the header row.`,
 	Run: runLint,
 }
 
@@ -100,6 +102,26 @@ func runLint(cmd *cobra.Command, args []string) {
 				maxReferenced, lintInputFile, headerWidth,
 			)
 			os.Exit(7)
+		}
+
+		if named := transformer.NamedColumnsReferenced(); len(named) > 0 {
+			headerNames := make(map[string]bool, headerWidth)
+			for _, h := range header {
+				headerNames[recipe.NormalizeHeaderName(h)] = true
+			}
+			var missing []string
+			for _, name := range named {
+				if !headerNames[name] {
+					missing = append(missing, "{"+name+"}")
+				}
+			}
+			if len(missing) > 0 {
+				log.Errorf(
+					"Recipe references named column(s) %s, but input file %s has no header with that name",
+					strings.Join(missing, ", "), lintInputFile,
+				)
+				os.Exit(8)
+			}
 		}
 	}
 

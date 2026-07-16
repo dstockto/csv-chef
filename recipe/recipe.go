@@ -225,12 +225,13 @@ func (t *Transformation) Execute(reader *csv.Reader, writer *csv.Writer, process
 		}
 
 		// On the header row, capture header name -> column number so that
-		// {name} references can be resolved on this and later rows. A leading
-		// UTF-8 BOM on the first header is stripped so names still match.
+		// {name} references can be resolved on this and later rows. Names are
+		// normalized (BOM stripped, whitespace trimmed) to match the trimming
+		// the parser applies inside the braces.
 		if processHeader && linesRead == 1 {
 			headerNames = make(map[string]int, len(row))
 			for i, v := range row {
-				headerNames[strings.TrimPrefix(v, "\ufeff")] = i + 1
+				headerNames[NormalizeHeaderName(v)] = i + 1
 			}
 		}
 		context.Names = headerNames
@@ -809,6 +810,13 @@ func (t *Transformation) ValidateRecipe() error {
 	}
 
 	return nil
+}
+
+// NormalizeHeaderName prepares an input header cell for {name} matching: a
+// leading UTF-8 BOM is stripped and surrounding whitespace is trimmed, the
+// same trimming the parser applies to the name inside the braces.
+func NormalizeHeaderName(name string) string {
+	return strings.TrimSpace(strings.TrimPrefix(name, "\ufeff"))
 }
 
 type LineContext struct {
